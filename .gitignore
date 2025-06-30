@@ -1,0 +1,13 @@
+# Binary
+*.exe
+spp-payment-api
+
+# Env file
+.env
+
+# Logs
+*.log
+
+# IDE files
+.idea/
+.vscode/
