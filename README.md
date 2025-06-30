@@ -87,7 +87,6 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal A
     ```
 
 5.  **Jalankan Aplikasi**
-    -   GORM AutoMigrate akan berjalan secara otomatis untuk memastikan skema database sesuai dengan model.
     -   Server akan berjalan di port yang ditentukan di file `.env` (default: 8080).
     ```sh
     go run main.go

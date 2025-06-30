@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/hiuncy/spp-payment-api/internal/config"
 	"github.com/hiuncy/spp-payment-api/internal/handler"
-	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/repository"
 	"github.com/hiuncy/spp-payment-api/internal/service"
 
@@ -27,22 +27,6 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	err = db.AutoMigrate(
-		&model.Role{},
-		&model.User{},
-		&model.TingkatKelas{},
-		&model.Kelas{},
-		&model.Siswa{},
-		&model.PeriodeSPP{},
-		&model.TagihanSPP{},
-		&model.Pembayaran{},
-		&model.LogAktivitas{},
-		&model.Pengaturan{},
-	)
-	if err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
-	}
-
 	// Repository
 	userRepo := repository.NewUserRepository(db)
 
@@ -55,6 +39,7 @@ func main() {
 	adminHandler := handler.NewAdminHandler(userService)
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	apiRouter := handler.NewRouter(router, authHandler, adminHandler, cfg.JWTSecretKey)
 	apiRouter.SetupRoutes()
 
