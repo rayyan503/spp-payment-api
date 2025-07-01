@@ -47,7 +47,7 @@ func main() {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-	}git 
+	}
 	router.Use(cors.New(config))
 	apiRouter := handler.NewRouter(router, authHandler, adminHandler, cfg.JWTSecretKey)
 	apiRouter.SetupRoutes()
