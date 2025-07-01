@@ -72,7 +72,7 @@ func (r *userRepository) FindAll(params FindAllUsersParams) ([]model.User, int64
 	}
 
 	offset := (params.Page - 1) * params.Limit
-	err = query.Limit(params.Limit).Offset(offset).Preload("Role").Order("id desc").Find(&users).Error
+	err = query.Limit(params.Limit).Offset(offset).Preload("Role").Order("id asc").Find(&users).Error
 	if err != nil {
 		return nil, 0, err
 	}

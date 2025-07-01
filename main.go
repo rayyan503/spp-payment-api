@@ -30,15 +30,17 @@ func main() {
 	// Repository
 	userRepo := repository.NewUserRepository(db)
 	classLevelRepo := repository.NewClassLevelRepository(db)
+	classRepo := repository.NewClassRepository(db)
 
 	// Service
 	authService := service.NewAuthService(userRepo, cfg.JWTSecretKey)
 	userService := service.NewUserService(userRepo)
 	classLevelService := service.NewClassLevelService(classLevelRepo)
+	classService := service.NewClassService(classRepo)
 
 	// Handler
 	authHandler := handler.NewAuthHandler(authService, userService)
-	adminHandler := handler.NewAdminHandler(userService, classLevelService)
+	adminHandler := handler.NewAdminHandler(userService, classLevelService, classService)
 
 	router := gin.Default()
 	config := cors.Config{

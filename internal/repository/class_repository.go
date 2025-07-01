@@ -5,49 +5,49 @@ import (
 	"gorm.io/gorm"
 )
 
-type ClassLevelRepository interface {
-	Create(classLevel *model.TingkatKelas) error
-	FindByTingkat(tingkat int) (*model.TingkatKelas, error)
-	FindAll() ([]model.TingkatKelas, error)
-	FindByID(id uint) (*model.TingkatKelas, error)
-	Update(classLevel *model.TingkatKelas) error
+type ClassRepository interface {
+	Create(class *model.Kelas) error
+	FindAll() ([]model.Kelas, error)
+	FindByID(id uint) (*model.Kelas, error)
+	FindByName(name string) (*model.Kelas, error)
+	Update(class *model.Kelas) error
 	Delete(id uint) error
 }
 
-type classLevelRepository struct {
+type classRepository struct {
 	db *gorm.DB
 }
 
-func NewClassLevelRepository(db *gorm.DB) ClassLevelRepository {
-	return &classLevelRepository{db}
+func NewClassRepository(db *gorm.DB) ClassRepository {
+	return &classRepository{db}
 }
 
-func (r *classLevelRepository) Create(classLevel *model.TingkatKelas) error {
-	return r.db.Create(classLevel).Error
+func (r *classRepository) Create(class *model.Kelas) error {
+	return r.db.Create(class).Error
 }
 
-func (r *classLevelRepository) FindByTingkat(tingkat int) (*model.TingkatKelas, error) {
-	var classLevel model.TingkatKelas
-	err := r.db.Where("tingkat = ?", tingkat).First(&classLevel).Error
-	return &classLevel, err
+func (r *classRepository) FindAll() ([]model.Kelas, error) {
+	var classes []model.Kelas
+	err := r.db.Preload("TingkatKelas").Order("nama_kelas asc").Find(&classes).Error
+	return classes, err
 }
 
-func (r *classLevelRepository) FindAll() ([]model.TingkatKelas, error) {
-	var classLevels []model.TingkatKelas
-	err := r.db.Order("tingkat asc").Find(&classLevels).Error
-	return classLevels, err
+func (r *classRepository) FindByID(id uint) (*model.Kelas, error) {
+	var class model.Kelas
+	err := r.db.Preload("TingkatKelas").Where("id = ?", id).First(&class).Error
+	return &class, err
 }
 
-func (r *classLevelRepository) FindByID(id uint) (*model.TingkatKelas, error) {
-	var classLevel model.TingkatKelas
-	err := r.db.Where("id = ?", id).First(&classLevel).Error
-	return &classLevel, err
+func (r *classRepository) FindByName(name string) (*model.Kelas, error) {
+	var class model.Kelas
+	err := r.db.Where("nama_kelas = ?", name).First(&class).Error
+	return &class, err
 }
 
-func (r *classLevelRepository) Update(classLevel *model.TingkatKelas) error {
-	return r.db.Save(classLevel).Error
+func (r *classRepository) Update(class *model.Kelas) error {
+	return r.db.Save(class).Error
 }
 
-func (r *classLevelRepository) Delete(id uint) error {
-	return r.db.Where("id = ?", id).Delete(&model.TingkatKelas{}).Error
+func (r *classRepository) Delete(id uint) error {
+	return r.db.Where("id = ?", id).Delete(&model.Kelas{}).Error
 }

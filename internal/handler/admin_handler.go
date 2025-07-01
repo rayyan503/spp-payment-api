@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/service"
 	"github.com/hiuncy/spp-payment-api/internal/utils"
 	"gorm.io/gorm"
@@ -38,6 +39,32 @@ type UpdateClassLevelRequest struct {
 	Status      string  `json:"status" binding:"required,oneof=aktif nonaktif"`
 }
 
+type ClassRequest struct {
+	TingkatID uint   `json:"tingkat_id" binding:"required"`
+	NamaKelas string `json:"nama_kelas" binding:"required"`
+	WaliKelas string `json:"wali_kelas"`
+	Kapasitas int    `json:"kapasitas" binding:"gte=0"`
+}
+
+type UpdateClassRequest struct {
+	TingkatID uint   `json:"tingkat_id" binding:"required"`
+	NamaKelas string `json:"nama_kelas" binding:"required"`
+	WaliKelas string `json:"wali_kelas"`
+	Kapasitas int    `json:"kapasitas" binding:"gte=0"`
+	Status    string `json:"status" binding:"required,oneof=aktif nonaktif"`
+}
+
+type ClassResponse struct {
+	ID          uint    `json:"id"`
+	NamaKelas   string  `json:"nama_kelas"`
+	WaliKelas   string  `json:"wali_kelas"`
+	Kapasitas   int     `json:"kapasitas"`
+	Status      string  `json:"status"`
+	TingkatID   uint    `json:"tingkat_id"`
+	NamaTingkat string  `json:"nama_tingkat"`
+	BiayaSPP    float64 `json:"biaya_spp"`
+}
+
 type AdminHandler interface {
 	CreateUser(c *gin.Context)
 	FindAllUsers(c *gin.Context)
@@ -49,15 +76,21 @@ type AdminHandler interface {
 	FindClassLevelByID(c *gin.Context)
 	UpdateClassLevel(c *gin.Context)
 	DeleteClassLevel(c *gin.Context)
+	CreateClass(c *gin.Context)
+	FindAllClasses(c *gin.Context)
+	FindClassByID(c *gin.Context)
+	UpdateClass(c *gin.Context)
+	DeleteClass(c *gin.Context)
 }
 
 type adminHandler struct {
 	userService       service.UserService
 	classLevelService service.ClassLevelService
+	classService      service.ClassService
 }
 
-func NewAdminHandler(userService service.UserService, classLevelService service.ClassLevelService) AdminHandler {
-	return &adminHandler{userService, classLevelService}
+func NewAdminHandler(userService service.UserService, classLevelService service.ClassLevelService, classService service.ClassService) AdminHandler {
+	return &adminHandler{userService, classLevelService, classService}
 }
 
 func (h *adminHandler) CreateUser(c *gin.Context) {
@@ -349,4 +382,96 @@ func (h *adminHandler) DeleteClassLevel(c *gin.Context) {
 	}
 
 	utils.SendSuccessResponse(c, http.StatusOK, "Data tingkat kelas berhasil dihapus", nil)
+}
+
+func formatClassResponse(class *model.Kelas) ClassResponse {
+	return ClassResponse{
+		ID:          class.ID,
+		NamaKelas:   class.NamaKelas,
+		WaliKelas:   class.WaliKelas,
+		Kapasitas:   class.Kapasitas,
+		Status:      class.Status,
+		TingkatID:   class.TingkatID,
+		NamaTingkat: class.TingkatKelas.NamaTingkat,
+		BiayaSPP:    class.TingkatKelas.BiayaSPP,
+	}
+}
+
+func (h *adminHandler) CreateClass(c *gin.Context) {
+	var req ClassRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
+		return
+	}
+	input := service.CreateClassInput{
+		TingkatID: req.TingkatID,
+		NamaKelas: req.NamaKelas,
+		WaliKelas: req.WaliKelas,
+		Kapasitas: req.Kapasitas,
+	}
+	newClass, err := h.classService.CreateClass(input)
+	if err != nil {
+		// ... (penanganan error duplikat, dll)
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusCreated, "Kelas berhasil dibuat", formatClassResponse(newClass))
+}
+
+func (h *adminHandler) FindAllClasses(c *gin.Context) {
+	classes, err := h.classService.FindAllClasses()
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data kelas")
+		return
+	}
+	var responses []ClassResponse
+	for _, class := range classes {
+		responses = append(responses, formatClassResponse(&class))
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Data kelas berhasil diambil", responses)
+}
+
+func (h *adminHandler) FindClassByID(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	class, err := h.classService.FindClassByID(uint(id))
+	if err != nil {
+		// ... (penanganan error not found)
+		utils.SendErrorResponse(c, http.StatusNotFound, "Kelas tidak ditemukan")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail kelas berhasil diambil", formatClassResponse(class))
+}
+
+func (h *adminHandler) UpdateClass(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	var req UpdateClassRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
+		return
+	}
+	input := service.UpdateClassInput{
+		TingkatID: req.TingkatID,
+		NamaKelas: req.NamaKelas,
+		WaliKelas: req.WaliKelas,
+		Kapasitas: req.Kapasitas,
+		Status:    req.Status,
+	}
+	updatedClass, err := h.classService.UpdateClass(uint(id), input)
+	if err != nil {
+		// ... (penanganan error not found, duplikat, dll)
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Kelas berhasil diperbarui", formatClassResponse(updatedClass))
+}
+
+func (h *adminHandler) DeleteClass(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	err := h.classService.DeleteClass(uint(id))
+	if err != nil {
+		// ... (penanganan error not found)
+		utils.SendErrorResponse(c, http.StatusNotFound, "Kelas tidak ditemukan")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Kelas berhasil dihapus", nil)
 }

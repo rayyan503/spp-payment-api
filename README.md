@@ -250,6 +250,55 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 </details>
 
+<details>
+<summary><b>Admin - Manajemen Kelas</b></summary>
+
+### Membuat Kelas Baru
+-   `POST /api/v1/admin/classes`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "tingkat_id": 1,
+        "nama_kelas": "1A",
+        "wali_kelas": "Bu Sari",
+        "kapasitas": 30
+    }
+    ```
+
+### Mendapatkan Semua Kelas
+-   `GET /api/v1/admin/classes`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Mendapatkan Detail Kelas
+-   `GET /api/v1/admin/classes/{id}`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Memperbarui Kelas
+-   `PUT /api/v1/admin/classes/{id}`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "tingkat_id": 1,
+        "nama_kelas": "1A",
+        "wali_kelas": "Sari Hartati, S.Pd.",
+        "kapasitas": 32,
+        "status": "aktif"
+    }
+    ```
+
+### Menghapus Kelas
+-   `DELETE /api/v1/admin/classes/{id}`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+</details>
+
 ## Kontribusi
 
 Kontribusi dalam bentuk *pull request*, isu, atau ide fitur sangat diterima.
