@@ -137,6 +137,7 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 ### Mendapatkan Profil Pengguna Login
 -   `GET /api/v1/me`
 -   **Otorisasi**: Admin, Bendahara, Siswa
+-   **Header**: `Authorization: Bearer <TOKEN>`
 -   **Response Sukses (200 OK)**:
     ```json
     {
@@ -159,6 +160,7 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 ### Membuat Pengguna Baru
 -   `POST /api/v1/admin/users`
 -   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
 -   **Request Body**:
     ```json
     {
@@ -168,58 +170,23 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
         "role_id": 2
     }
     ```
--   **Response Sukses (201 Created)**:
-    ```json
-    {
-        "status": "success",
-        "message": "Pengguna berhasil dibuat",
-        "data": {
-            "id": 2,
-            "nama_lengkap": "Bendahara Sekolah",
-            "email": "bendahara@sekolah.sch.id",
-            "role": "bendahara"
-        }
-    }
-    ```
 
 ### Mendapatkan Daftar Pengguna
 -   `GET /api/v1/admin/users`
 -   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
 -   **Query Params (Opsional)**:
-    -   `page` (angka): Nomor halaman. Default: `1`.
-    -   `limit` (angka): Jumlah data per halaman. Default: `10`.
-    -   `role_id` (angka): Filter berdasarkan ID peran.
-    -   `search` (string): Cari berdasarkan nama lengkap.
--   **Response Sukses (200 OK)**:
-    ```json
-    {
-        "status": "success",
-        "message": "Data pengguna berhasil diambil",
-        "data": {
-            "data": [
-                {
-                    "id": 2,
-                    "nama_lengkap": "Bendahara Sekolah",
-                    "email": "bendahara@sekolah.sch.id",
-                    "role": "bendahara"
-                }
-            ],
-            "meta": {
-                "total": 1,
-                "page": 1,
-                "limit": 10
-            }
-        }
-    }
-    ```
+    -   `page` (angka), `limit` (angka), `role_id` (angka), `search` (string)
+
 ### Mendapatkan Detail Pengguna
 -   `GET /api/v1/admin/users/{id}`
 -   **Otorisasi**: Admin
--   **Response Sukses (200 OK)**: (Sama seperti response `/me`)
+-   **Header**: `Authorization: Bearer <TOKEN>`
 
 ### Memperbarui Pengguna
 -   `PUT /api/v1/admin/users/{id}`
 -   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
 -   **Request Body**:
     ```json
     {
@@ -228,30 +195,59 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
         "role_id": 2
     }
     ```
--   **Response Sukses (200 OK)**:
-    ```json
-    {
-        "status": "success",
-        "message": "Data pengguna berhasil diperbarui",
-        "data": {
-            "id": 2,
-            "nama_lengkap": "Bendahara Utama Update",
-            "email": "bendahara.utama@sekolah.sch.id",
-            "role": "bendahara"
-        }
-    }
-    ```
+
 ### Menghapus Pengguna
 -   `DELETE /api/v1/admin/users/{id}`
 -   **Otorisasi**: Admin
--   **Response Sukses (200 OK)**:
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+</details>
+
+<details>
+<summary><b>Admin - Manajemen Tingkat Kelas</b></summary>
+
+### Membuat Tingkat Kelas Baru
+-   `POST /api/v1/admin/class-levels`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
     ```json
     {
-        "status": "success",
-        "message": "Pengguna berhasil dihapus",
-        "data": null
+        "tingkat": 1,
+        "nama_tingkat": "Kelas 1",
+        "biaya_spp": 150000
     }
     ```
+
+### Mendapatkan Semua Tingkat Kelas
+-   `GET /api/v1/admin/class-levels`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Mendapatkan Detail Tingkat Kelas
+-   `GET /api/v1/admin/class-levels/{id}`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Memperbarui Tingkat Kelas
+-   `PUT /api/v1/admin/class-levels/{id}`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "tingkat": 1,
+        "nama_tingkat": "Kelas 1",
+        "biaya_spp": 155000,
+        "status": "aktif"
+    }
+    ```
+
+### Menghapus Tingkat Kelas
+-   `DELETE /api/v1/admin/class-levels/{id}`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
 </details>
 
 ## Kontribusi

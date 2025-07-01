@@ -29,14 +29,16 @@ func main() {
 
 	// Repository
 	userRepo := repository.NewUserRepository(db)
+	classLevelRepo := repository.NewClassLevelRepository(db)
 
 	// Service
 	authService := service.NewAuthService(userRepo, cfg.JWTSecretKey)
 	userService := service.NewUserService(userRepo)
+	classLevelService := service.NewClassLevelService(classLevelRepo)
 
 	// Handler
 	authHandler := handler.NewAuthHandler(authService, userService)
-	adminHandler := handler.NewAdminHandler(userService)
+	adminHandler := handler.NewAdminHandler(userService, classLevelService)
 
 	router := gin.Default()
 	router.Use(cors.Default())

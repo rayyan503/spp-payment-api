@@ -33,6 +33,11 @@ func (r *Router) SetupRoutes() {
 		admin.GET("/users/:id", r.adminHandler.FindUserByID)
 		admin.PUT("/users/:id", r.adminHandler.UpdateUser)
 		admin.DELETE("/users/:id", r.adminHandler.DeleteUser)
+		admin.POST("/class-levels", r.adminHandler.CreateClassLevel)
+		admin.GET("/class-levels", r.adminHandler.FindAllClassLevels)
+		admin.GET("/class-levels/:id", r.adminHandler.FindClassLevelByID)
+		admin.PUT("/class-levels/:id", r.adminHandler.UpdateClassLevel)
+		admin.DELETE("/class-levels/:id", r.adminHandler.DeleteClassLevel)
 	}
 
 	// Treasurer routes
