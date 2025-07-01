@@ -41,7 +41,14 @@ func main() {
 	adminHandler := handler.NewAdminHandler(userService, classLevelService)
 
 	router := gin.Default()
-	router.Use(cors.Default())
+	config := cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}git 
+	router.Use(cors.New(config))
 	apiRouter := handler.NewRouter(router, authHandler, adminHandler, cfg.JWTSecretKey)
 	apiRouter.SetupRoutes()
 
