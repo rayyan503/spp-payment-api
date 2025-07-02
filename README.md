@@ -416,6 +416,59 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 </details>
 
+<details>
+<summary><b>🧑‍💼 Bendahara - Manajemen Periode SPP</b></summary>
+
+### Membuat Periode Baru
+-   `POST /api/v1/treasurer/periods`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "tahun_ajaran": "2025/2026",
+        "bulan": 7,
+        "nama_bulan": "Juli",
+        "tanggal_mulai": "2025-07-01",
+        "tanggal_selesai": "2025-07-31"
+    }
+    ```
+
+### Mendapatkan Daftar Periode
+-   `GET /api/v1/treasurer/periods`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `tahun_ajaran` (string): Filter berdasarkan tahun ajaran, contoh: `2025/2026`.
+
+### Mendapatkan Detail Periode
+-   `GET /api/v1/treasurer/periods/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Memperbarui Periode
+-   `PUT /api/v1/treasurer/periods/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "tahun_ajaran": "2025/2026",
+        "bulan": 7,
+        "nama_bulan": "Juli",
+        "tanggal_mulai": "2025-07-01",
+        "tanggal_selesai": "2025-08-10",
+        "status": "aktif"
+    }
+    ```
+
+### Menghapus Periode
+-   `DELETE /api/v1/treasurer/periods/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+</details>
+
 ## Kontribusi
 
 Kontribusi dalam bentuk *pull request*, isu, atau ide fitur sangat diterima.

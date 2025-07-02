@@ -1,5 +1,3 @@
-// File: internal/handler/treasurer_handler.go (File Baru)
-
 package handler
 
 import (
@@ -16,20 +14,43 @@ import (
 	"gorm.io/gorm"
 )
 
+type PeriodRequest struct {
+	TahunAjaran    string `json:"tahun_ajaran" binding:"required"`
+	Bulan          int    `json:"bulan" binding:"required,gte=1,lte=12"`
+	NamaBulan      string `json:"nama_bulan" binding:"required"`
+	TanggalMulai   string `json:"tanggal_mulai" binding:"required"`
+	TanggalSelesai string `json:"tanggal_selesai" binding:"required"`
+}
+
+type UpdatePeriodRequest struct {
+	TahunAjaran    string `json:"tahun_ajaran" binding:"required"`
+	Bulan          int    `json:"bulan" binding:"required,gte=1,lte=12"`
+	NamaBulan      string `json:"nama_bulan" binding:"required"`
+	TanggalMulai   string `json:"tanggal_mulai" binding:"required"`
+	TanggalSelesai string `json:"tanggal_selesai" binding:"required"`
+	Status         string `json:"status" binding:"required,oneof=belum_aktif aktif selesai"`
+}
+
 type TreasurerHandler interface {
 	CreateStudent(c *gin.Context)
 	FindAllStudents(c *gin.Context)
 	FindStudentByID(c *gin.Context)
 	UpdateStudent(c *gin.Context)
 	DeleteStudent(c *gin.Context)
+	CreatePeriod(c *gin.Context)
+	FindAllPeriods(c *gin.Context)
+	FindPeriodByID(c *gin.Context)
+	UpdatePeriod(c *gin.Context)
+	DeletePeriod(c *gin.Context)
 }
 
 type treasurerHandler struct {
 	studentService service.StudentService
+	periodService  service.PeriodService
 }
 
-func NewTreasurerHandler(studentService service.StudentService) TreasurerHandler {
-	return &treasurerHandler{studentService}
+func NewTreasurerHandler(studentService service.StudentService, periodService service.PeriodService) TreasurerHandler {
+	return &treasurerHandler{studentService, periodService}
 }
 
 type CreateStudentRequest struct {
@@ -249,4 +270,115 @@ func (h *treasurerHandler) DeleteStudent(c *gin.Context) {
 	}
 
 	utils.SendSuccessResponse(c, http.StatusOK, "Data siswa berhasil dihapus", nil)
+}
+
+func (h *treasurerHandler) CreatePeriod(c *gin.Context) {
+	var req PeriodRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
+		return
+	}
+
+	input := service.CreatePeriodInput{
+		TahunAjaran:    req.TahunAjaran,
+		Bulan:          req.Bulan,
+		NamaBulan:      req.NamaBulan,
+		TanggalMulai:   req.TanggalMulai,
+		TanggalSelesai: req.TanggalSelesai,
+	}
+
+	period, err := h.periodService.CreatePeriod(input)
+	if err != nil {
+		if err.Error() == "periode untuk tahun ajaran dan bulan tersebut sudah ada" {
+			utils.SendErrorResponse(c, http.StatusConflict, err.Error())
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuat periode")
+		return
+	}
+
+	utils.SendSuccessResponse(c, http.StatusCreated, "Periode berhasil dibuat", period)
+}
+
+func (h *treasurerHandler) FindAllPeriods(c *gin.Context) {
+	tahunAjaran := c.Query("tahun_ajaran")
+	periods, err := h.periodService.FindAllPeriods(tahunAjaran)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data periode")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Data periode berhasil diambil", periods)
+}
+
+func (h *treasurerHandler) FindPeriodByID(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID periode tidak valid")
+		return
+	}
+
+	period, err := h.periodService.FindPeriodByID(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Periode tidak ditemukan")
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil detail periode")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail periode berhasil diambil", period)
+}
+
+func (h *treasurerHandler) UpdatePeriod(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID periode tidak valid")
+		return
+	}
+
+	var req UpdatePeriodRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
+		return
+	}
+
+	input := service.UpdatePeriodInput{
+		TahunAjaran:    req.TahunAjaran,
+		Bulan:          req.Bulan,
+		NamaBulan:      req.NamaBulan,
+		TanggalMulai:   req.TanggalMulai,
+		TanggalSelesai: req.TanggalSelesai,
+		Status:         req.Status,
+	}
+
+	period, err := h.periodService.UpdatePeriod(uint(id), input)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Periode tidak ditemukan")
+			return
+		}
+		// Tambahkan penanganan error duplikat jika ada di service
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui periode")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Periode berhasil diperbarui", period)
+}
+
+func (h *treasurerHandler) DeletePeriod(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID periode tidak valid")
+		return
+	}
+
+	err = h.periodService.DeletePeriod(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Periode tidak ditemukan")
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus periode")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Periode berhasil dihapus", nil)
 }

@@ -52,6 +52,11 @@ func (r *Router) SetupRoutes() {
 		treasurer.GET("/students/:id", r.treasurerHandler.FindStudentByID)
 		treasurer.PUT("/students/:id", r.treasurerHandler.UpdateStudent)
 		treasurer.DELETE("/students/:id", r.treasurerHandler.DeleteStudent)
+		treasurer.POST("/periods", r.treasurerHandler.CreatePeriod)
+		treasurer.GET("/periods", r.treasurerHandler.FindAllPeriods)
+		treasurer.GET("/periods/:id", r.treasurerHandler.FindPeriodByID)
+		treasurer.PUT("/periods/:id", r.treasurerHandler.UpdatePeriod)
+		treasurer.DELETE("/periods/:id", r.treasurerHandler.DeletePeriod)
 	}
 
 	// Student routes
