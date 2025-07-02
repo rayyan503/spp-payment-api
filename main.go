@@ -49,7 +49,7 @@ func main() {
 	billService := service.NewBillService(billRepo)
 	reportService := service.NewReportService(reportRepo)
 	midTransService := service.NewMidtransService(cfg)
-	paymentService := service.NewPaymentService(billRepo, studentRepo, paymentRepo, midTransService)
+	paymentService := service.NewPaymentService(billRepo, studentRepo, paymentRepo, midTransService, db)
 
 	// Handler
 	authHandler := handler.NewAuthHandler(authService, userService)
