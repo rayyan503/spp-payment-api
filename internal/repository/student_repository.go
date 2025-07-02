@@ -19,6 +19,7 @@ type StudentRepository interface {
 	FindByNISN(nisn string) (*model.Siswa, error)
 	Update(student *model.Siswa) error
 	Delete(id uint) error
+	FindByUserID(userID uint) (*model.Siswa, error)
 }
 
 type studentRepository struct {
@@ -30,7 +31,7 @@ func NewStudentRepository(db *gorm.DB) StudentRepository {
 }
 
 func (r *studentRepository) Create(student *model.Siswa) error {
-	return r.db.Create(student).Error
+	return r.db.Table("siswa").Create(student).Error
 }
 
 func (r *studentRepository) FindAll(params FindAllStudentsParams) ([]model.Siswa, int64, error) {
@@ -66,13 +67,13 @@ func (r *studentRepository) FindAll(params FindAllStudentsParams) ([]model.Siswa
 
 func (r *studentRepository) FindByID(id uint) (*model.Siswa, error) {
 	var student model.Siswa
-	err := r.db.Preload("User").Preload("Kelas.TingkatKelas").Where("id = ?", id).First(&student).Error
+	err := r.db.Table("siswa").Preload("User").Preload("Kelas.TingkatKelas").Where("id = ?", id).First(&student).Error
 	return &student, err
 }
 
 func (r *studentRepository) FindByNISN(nisn string) (*model.Siswa, error) {
 	var student model.Siswa
-	err := r.db.Where("nisn = ?", nisn).First(&student).Error
+	err := r.db.Table("siswa").Where("nisn = ?", nisn).First(&student).Error
 	return &student, err
 }
 
@@ -86,4 +87,10 @@ func (r *studentRepository) Delete(id uint) error {
 		return err
 	}
 	return r.db.Delete(&model.User{}, student.UserID).Error
+}
+
+func (r *studentRepository) FindByUserID(userID uint) (*model.Siswa, error) {
+	var student model.Siswa
+	err := r.db.Preload("User").Preload("Kelas.TingkatKelas").Where("user_id = ?", userID).First(&student).Error
+	return &student, err
 }

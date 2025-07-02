@@ -11,11 +11,12 @@ type Router struct {
 	authHandler      AuthHandler
 	adminHandler     AdminHandler
 	treasurerHandler TreasurerHandler
+	studentHandler   StudentHandler
 	jwtSecretKey     string
 }
 
-func NewRouter(engine *gin.Engine, authHandler AuthHandler, adminHandler AdminHandler, treasurerHandler TreasurerHandler, jwtSecretKey string) *Router {
-	return &Router{engine, authHandler, adminHandler, treasurerHandler, jwtSecretKey}
+func NewRouter(engine *gin.Engine, authHandler AuthHandler, adminHandler AdminHandler, treasurerHandler TreasurerHandler, studentHandler StudentHandler, jwtSecretKey string) *Router {
+	return &Router{engine, authHandler, adminHandler, treasurerHandler, studentHandler, jwtSecretKey}
 }
 
 func (r *Router) SetupRoutes() {
@@ -79,6 +80,9 @@ func (r *Router) SetupRoutes() {
 	student := api.Group("/student")
 	student.Use(middleware.AuthMiddleware(r.jwtSecretKey, "siswa"))
 	{
-		// student.GET("/bills", ...)
+		student.GET("/profile", r.studentHandler.GetProfile)
+		student.GET("/bills", r.studentHandler.FindMyBills)
+		student.POST("/bills/:id/pay", r.studentHandler.InitiatePayment)
+		student.GET("/payment-history", r.studentHandler.GetPaymentHistory)
 	}
 }

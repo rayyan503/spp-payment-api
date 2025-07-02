@@ -58,6 +58,7 @@ type StudentService interface {
 	FindStudentByID(id uint) (*model.Siswa, error)
 	UpdateStudent(id uint, input UpdateStudentInput) (*model.Siswa, error)
 	DeleteStudent(id uint) error
+	GetStudentProfile(userID uint) (*model.Siswa, error)
 }
 
 type studentService struct {
@@ -75,18 +76,15 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	// Defer a rollback in case of panic
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
 	}()
 
-	// Gunakan repository dengan transaksi
 	userRepoTx := repository.NewUserRepository(tx)
 	studentRepoTx := repository.NewStudentRepository(tx)
 
-	// 1. Cek duplikasi email dan nisn
 	_, err := userRepoTx.FindByEmail(input.Email)
 	if err == nil {
 		tx.Rollback()
@@ -98,7 +96,6 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 		return nil, errors.New("NISN sudah terdaftar")
 	}
 
-	// 2. Buat akun user untuk siswa
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
 		tx.Rollback()
@@ -107,7 +104,7 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 	newUser := &model.User{
 		Email:       input.Email,
 		Password:    hashedPassword,
-		RoleID:      3, // Role ID untuk siswa
+		RoleID:      3,
 		NamaLengkap: input.NamaLengkap,
 		Status:      "aktif",
 	}
@@ -116,7 +113,6 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 		return nil, err
 	}
 
-	// 3. Buat data siswa
 	tglLahir, _ := time.Parse("2006-01-02", input.TanggalLahir)
 	newStudent := &model.Siswa{
 		UserID:          newUser.ID,
@@ -127,8 +123,8 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 		TempatLahir:     input.TempatLahir,
 		TanggalLahir:    &tglLahir,
 		Alamat:          input.Alamat,
-		NamaOrangTua:    input.NamaOrangTua,
-		TeleponOrangTua: input.TeleponOrangTua,
+		NamaOrangtua:    input.NamaOrangTua,
+		TeleponOrangtua: input.TeleponOrangTua,
 		TahunMasuk:      input.TahunMasuk,
 		Status:          "aktif",
 	}
@@ -141,7 +137,7 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 		return nil, err
 	}
 
-	return studentRepoTx.FindByID(newStudent.ID)
+	return s.studentRepo.FindByID(newStudent.ID)
 }
 
 func (s *studentService) FindAllStudents(input FindAllStudentsInput) ([]model.Siswa, int64, error) {
@@ -165,13 +161,11 @@ func (s *studentService) FindStudentByID(id uint) (*model.Siswa, error) {
 }
 
 func (s *studentService) UpdateStudent(id uint, input UpdateStudentInput) (*model.Siswa, error) {
-	// 1. Cari siswa berdasarkan ID, pastikan ada
 	student, err := s.studentRepo.FindByID(id)
 	if err != nil {
-		return nil, err // Error akan gorm.ErrRecordNotFound jika tidak ada
+		return nil, err
 	}
 
-	// 2. Validasi duplikasi NISN jika diubah
 	if input.NISN != student.NISN {
 		existingStudent, err := s.studentRepo.FindByNISN(input.NISN)
 		if err == nil && existingStudent.ID != student.ID {
@@ -179,7 +173,6 @@ func (s *studentService) UpdateStudent(id uint, input UpdateStudentInput) (*mode
 		}
 	}
 
-	// 3. Validasi duplikasi Email jika diubah
 	if input.EmailUser != student.User.Email {
 		existingUser, err := s.userRepo.FindByEmail(input.EmailUser)
 		if err == nil && existingUser.ID != student.UserID {
@@ -187,7 +180,6 @@ func (s *studentService) UpdateStudent(id uint, input UpdateStudentInput) (*mode
 		}
 	}
 
-	// 4. Perbarui field pada data siswa
 	tglLahir, _ := time.Parse("2006-01-02", input.TanggalLahir)
 	student.NISN = input.NISN
 	student.KelasID = input.KelasID
@@ -196,27 +188,27 @@ func (s *studentService) UpdateStudent(id uint, input UpdateStudentInput) (*mode
 	student.TempatLahir = input.TempatLahir
 	student.TanggalLahir = &tglLahir
 	student.Alamat = input.Alamat
-	student.NamaOrangTua = input.NamaOrangTua
-	student.TeleponOrangTua = input.TeleponOrangTua
+	student.NamaOrangtua = input.NamaOrangTua
+	student.TeleponOrangtua = input.TeleponOrangTua
 	student.TahunMasuk = input.TahunMasuk
 	student.Status = input.Status
 
-	// 5. Perbarui field pada data user yang terkait
 	student.User.Email = input.EmailUser
 	student.User.Status = input.StatusUser
-	student.User.NamaLengkap = input.NamaLengkap // Sinkronkan nama
+	student.User.NamaLengkap = input.NamaLengkap
 
-	// 6. Simpan perubahan ke database.
-	// GORM's Save() akan memperbarui record siswa dan record user yang berelasi.
 	err = s.studentRepo.Update(student)
 	if err != nil {
 		return nil, err
 	}
 
-	// Kembalikan data yang sudah diperbarui secara lengkap
 	return s.studentRepo.FindByID(id)
 }
 
 func (s *studentService) DeleteStudent(id uint) error {
 	return s.studentRepo.Delete(id)
+}
+
+func (s *studentService) GetStudentProfile(userID uint) (*model.Siswa, error) {
+	return s.studentRepo.FindByUserID(userID)
 }

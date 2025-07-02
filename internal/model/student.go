@@ -12,8 +12,8 @@ type Siswa struct {
 	TempatLahir     string     `gorm:"type:varchar(50)"`
 	TanggalLahir    *time.Time `gorm:"type:date"`
 	Alamat          string     `gorm:"type:text"`
-	NamaOrangTua    string     `gorm:"type:varchar(100)"`
-	TeleponOrangTua string     `gorm:"type:varchar(20)"`
+	NamaOrangtua    string     `gorm:"type:varchar(100)"`
+	TeleponOrangtua string     `gorm:"type:varchar(20)"`
 	TahunMasuk      int        `gorm:"type:year"`
 	Status          string     `gorm:"type:enum('aktif', 'pindah', 'lulus', 'keluar');default:'aktif'"`
 	CreatedAt       time.Time

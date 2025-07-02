@@ -541,6 +541,34 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 </details>
 
+<details>
+<summary><b>Siswa - Portal Tagihan & Pembayaran</b></summary>
+
+### Mendapatkan Profil Siswa
+-   `GET /api/v1/student/profile`
+-   **Otorisasi**: Siswa
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Mendapatkan Daftar Tagihan
+-   `GET /api/v1/student/bills`
+-   **Otorisasi**: Siswa
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `status` (string): Filter berdasarkan status pembayaran (`belum_bayar`, `lunas`, `pending`).
+
+### Memulai Proses Pembayaran
+-   `POST /api/v1/student/bills/{id}/pay`
+-   **Otorisasi**: Siswa
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Fungsi**: Memulai transaksi untuk ID tagihan tertentu dan mengembalikan `snap_token` dari Midtrans.
+
+### Melihat Riwayat Pembayaran
+-   `GET /api/v1/student/payment-history`
+-   **Otorisasi**: Siswa
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+</details>
+
 ## Kontribusi
 
 Kontribusi dalam bentuk *pull request*, isu, atau ide fitur sangat diterima.

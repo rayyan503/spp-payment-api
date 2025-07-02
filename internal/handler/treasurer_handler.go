@@ -141,13 +141,13 @@ func formatStudentResponse(student *model.Siswa) StudentResponse {
 		TempatLahir:     student.TempatLahir,
 		TanggalLahir:    student.TanggalLahir,
 		Alamat:          student.Alamat,
-		NamaOrangTua:    student.NamaOrangTua,
-		TeleponOrangTua: student.TeleponOrangTua,
+		NamaOrangTua:    student.NamaOrangtua,
+		TeleponOrangTua: student.TeleponOrangtua,
 		TahunMasuk:      student.TahunMasuk,
 	}
 }
 
-func formatBillResponse(bill *model.TagihanSPP) BillResponse {
+func FormatBillResponse(bill *model.TagihanSPP) BillResponse {
 	return BillResponse{
 		ID:                bill.ID,
 		SiswaID:           bill.SiswaID,
@@ -461,7 +461,7 @@ func (h *treasurerHandler) FindAllBills(c *gin.Context) {
 
 	var responses []BillResponse
 	for _, bill := range bills {
-		responses = append(responses, formatBillResponse(&bill))
+		responses = append(responses, FormatBillResponse(&bill))
 	}
 
 	response := gin.H{
@@ -491,7 +491,7 @@ func (h *treasurerHandler) FindBillByID(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil detail tagihan")
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusOK, "Detail tagihan berhasil diambil", formatBillResponse(bill))
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail tagihan berhasil diambil", FormatBillResponse(bill))
 }
 
 func (h *treasurerHandler) UpdateBill(c *gin.Context) {
@@ -521,7 +521,7 @@ func (h *treasurerHandler) UpdateBill(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui tagihan")
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil diperbarui", formatBillResponse(bill))
+	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil diperbarui", FormatBillResponse(bill))
 }
 
 func (h *treasurerHandler) DeleteBill(c *gin.Context) {
