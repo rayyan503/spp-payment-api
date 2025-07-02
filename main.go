@@ -32,6 +32,7 @@ func main() {
 	classLevelRepo := repository.NewClassLevelRepository(db)
 	classRepo := repository.NewClassRepository(db)
 	settingRepo := repository.NewSettingRepository(db)
+	studentRepo := repository.NewStudentRepository(db)
 
 	// Service
 	authService := service.NewAuthService(userRepo, cfg.JWTSecretKey)
@@ -39,10 +40,12 @@ func main() {
 	classLevelService := service.NewClassLevelService(classLevelRepo)
 	classService := service.NewClassService(classRepo)
 	settingService := service.NewSettingService(settingRepo, db)
+	studentService := service.NewStudentService(studentRepo, userRepo, db)
 
 	// Handler
 	authHandler := handler.NewAuthHandler(authService, userService)
 	adminHandler := handler.NewAdminHandler(userService, classLevelService, classService, settingService)
+	treasurerHandler := handler.NewTreasurerHandler(studentService)
 
 	router := gin.Default()
 	config := cors.Config{
@@ -53,7 +56,7 @@ func main() {
 		AllowCredentials: true,
 	}
 	router.Use(cors.New(config))
-	apiRouter := handler.NewRouter(router, authHandler, adminHandler, cfg.JWTSecretKey)
+	apiRouter := handler.NewRouter(router, authHandler, adminHandler, treasurerHandler, cfg.JWTSecretKey)
 	apiRouter.SetupRoutes()
 
 	log.Printf("Server starting on port %s", cfg.ServerPort)

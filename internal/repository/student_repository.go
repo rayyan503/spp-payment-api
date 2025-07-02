@@ -1,0 +1,89 @@
+package repository
+
+import (
+	"github.com/hiuncy/spp-payment-api/internal/model"
+	"gorm.io/gorm"
+)
+
+type FindAllStudentsParams struct {
+	Limit   int
+	Page    int
+	KelasID uint
+	Search  string
+}
+
+type StudentRepository interface {
+	Create(student *model.Siswa) error
+	FindAll(params FindAllStudentsParams) ([]model.Siswa, int64, error)
+	FindByID(id uint) (*model.Siswa, error)
+	FindByNISN(nisn string) (*model.Siswa, error)
+	Update(student *model.Siswa) error
+	Delete(id uint) error
+}
+
+type studentRepository struct {
+	db *gorm.DB
+}
+
+func NewStudentRepository(db *gorm.DB) StudentRepository {
+	return &studentRepository{db}
+}
+
+func (r *studentRepository) Create(student *model.Siswa) error {
+	return r.db.Create(student).Error
+}
+
+func (r *studentRepository) FindAll(params FindAllStudentsParams) ([]model.Siswa, int64, error) {
+	var students []model.Siswa
+	var total int64
+
+	query := r.db.Model(&model.Siswa{})
+
+	if params.KelasID != 0 {
+		query = query.Where("kelas_id = ?", params.KelasID)
+	}
+	if params.Search != "" {
+		query = query.Where("nama_lengkap LIKE ? OR nisn LIKE ?", "%"+params.Search+"%", "%"+params.Search+"%")
+	}
+
+	err := query.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	offset := (params.Page - 1) * params.Limit
+	err = query.Limit(params.Limit).Offset(offset).
+		Preload("User").
+		Preload("Kelas.TingkatKelas").
+		Order("id desc").
+		Find(&students).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return students, total, nil
+}
+
+func (r *studentRepository) FindByID(id uint) (*model.Siswa, error) {
+	var student model.Siswa
+	err := r.db.Preload("User").Preload("Kelas.TingkatKelas").Where("id = ?", id).First(&student).Error
+	return &student, err
+}
+
+func (r *studentRepository) FindByNISN(nisn string) (*model.Siswa, error) {
+	var student model.Siswa
+	err := r.db.Where("nisn = ?", nisn).First(&student).Error
+	return &student, err
+}
+
+func (r *studentRepository) Update(student *model.Siswa) error {
+	return r.db.Save(student).Error
+}
+
+func (r *studentRepository) Delete(id uint) error {
+	student, err := r.FindByID(id)
+	if err != nil {
+		return err
+	}
+	return r.db.Delete(&model.User{}, student.UserID).Error
+}

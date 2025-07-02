@@ -346,6 +346,76 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 </details>
 
+<details>
+<summary><b>🧑‍💼 Bendahara - Manajemen Siswa</b></summary>
+
+### Membuat Siswa Baru
+-   `POST /api/v1/treasurer/students`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "email": "budi.siswa@email.com",
+        "password": "password123",
+        "nisn": "1234567890",
+        "kelas_id": 1,
+        "nama_lengkap": "Budi Santoso",
+        "jenis_kelamin": "L",
+        "tempat_lahir": "Jakarta",
+        "tanggal_lahir": "2018-07-15",
+        "alamat": "Jl. Merdeka No. 10",
+        "nama_orangtua": "Bapak Santoso",
+        "telepon_orangtua": "08123456789",
+        "tahun_masuk": 2024
+    }
+    ```
+
+### Mendapatkan Daftar Siswa
+-   `GET /api/v1/treasurer/students`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `page` (angka): Nomor halaman.
+    -   `limit` (angka): Jumlah data per halaman.
+    -   `kelas_id` (angka): Filter berdasarkan ID kelas.
+    -   `search` (string): Cari berdasarkan nama atau NISN.
+
+### Mendapatkan Detail Siswa
+-   `GET /api/v1/treasurer/students/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Memperbarui Siswa
+-   `PUT /api/v1/treasurer/students/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "nisn": "1234567890",
+        "kelas_id": 2,
+        "nama_lengkap": "Budi Santoso",
+        "jenis_kelamin": "L",
+        "tempat_lahir": "Jakarta",
+        "tanggal_lahir": "2018-07-15",
+        "alamat": "Jl. Kemerdekaan No. 12",
+        "nama_orangtua": "Bapak Santoso",
+        "telepon_orangtua": "08123456789",
+        "tahun_masuk": 2024,
+        "status": "aktif",
+        "email": "budi.santoso@email.com",
+        "status_user": "aktif"
+    }
+    ```
+
+### Menghapus Siswa
+-   `DELETE /api/v1/treasurer/students/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+</details>
+
 ## Kontribusi
 
 Kontribusi dalam bentuk *pull request*, isu, atau ide fitur sangat diterima.

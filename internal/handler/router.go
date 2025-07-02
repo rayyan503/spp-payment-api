@@ -7,14 +7,15 @@ import (
 )
 
 type Router struct {
-	engine       *gin.Engine
-	authHandler  AuthHandler
-	adminHandler AdminHandler
-	jwtSecretKey string
+	engine           *gin.Engine
+	authHandler      AuthHandler
+	adminHandler     AdminHandler
+	treasurerHandler TreasurerHandler
+	jwtSecretKey     string
 }
 
-func NewRouter(engine *gin.Engine, authHandler AuthHandler, adminHandler AdminHandler, jwtSecretKey string) *Router {
-	return &Router{engine, authHandler, adminHandler, jwtSecretKey}
+func NewRouter(engine *gin.Engine, authHandler AuthHandler, adminHandler AdminHandler, treasurerHandler TreasurerHandler, jwtSecretKey string) *Router {
+	return &Router{engine, authHandler, adminHandler, treasurerHandler, jwtSecretKey}
 }
 
 func (r *Router) SetupRoutes() {
@@ -44,9 +45,13 @@ func (r *Router) SetupRoutes() {
 
 	// Treasurer routes
 	treasurer := api.Group("/treasurer")
-	treasurer.Use(middleware.AuthMiddleware(r.jwtSecretKey, "bendahara"))
+	treasurer.Use(middleware.AuthMiddleware(r.jwtSecretKey, "bendahara", "admin"))
 	{
-		// treasurer.GET("/students", ...)
+		treasurer.POST("/students", r.treasurerHandler.CreateStudent)
+		treasurer.GET("/students", r.treasurerHandler.FindAllStudents)
+		treasurer.GET("/students/:id", r.treasurerHandler.FindStudentByID)
+		treasurer.PUT("/students/:id", r.treasurerHandler.UpdateStudent)
+		treasurer.DELETE("/students/:id", r.treasurerHandler.DeleteStudent)
 	}
 
 	// Student routes
