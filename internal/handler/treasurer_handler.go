@@ -5,10 +5,11 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"spp-payment-api/internal/service"
-	"spp-payment-api/internal/utils"
 	"strconv"
 	"time"
+
+	"github.com/hiuncy/spp-payment-api/internal/service"
+	"github.com/hiuncy/spp-payment-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hiuncy/spp-payment-api/internal/model"
@@ -209,7 +210,7 @@ func (h *treasurerHandler) UpdateStudent(c *gin.Context) {
 		TeleponOrangTua: req.TeleponOrangTua,
 		TahunMasuk:      req.TahunMasuk,
 		Status:          req.Status,
-		EmailUser:       req.Email,
+		EmailUser:       req.EmailUser,
 		StatusUser:      req.StatusUser,
 	}
 

@@ -2,10 +2,11 @@ package service
 
 import (
 	"errors"
-	"spp-payment-api/internal/model"
-	"spp-payment-api/internal/repository"
-	"spp-payment-api/internal/utils"
 	"time"
+
+	"github.com/hiuncy/spp-payment-api/internal/model"
+	"github.com/hiuncy/spp-payment-api/internal/repository"
+	"github.com/hiuncy/spp-payment-api/internal/utils"
 
 	"gorm.io/gorm"
 )
