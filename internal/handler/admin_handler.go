@@ -81,16 +81,19 @@ type AdminHandler interface {
 	FindClassByID(c *gin.Context)
 	UpdateClass(c *gin.Context)
 	DeleteClass(c *gin.Context)
+	FindAllSettings(c *gin.Context)
+	UpdateSettings(c *gin.Context)
 }
 
 type adminHandler struct {
 	userService       service.UserService
 	classLevelService service.ClassLevelService
 	classService      service.ClassService
+	settingService    service.SettingService
 }
 
-func NewAdminHandler(userService service.UserService, classLevelService service.ClassLevelService, classService service.ClassService) AdminHandler {
-	return &adminHandler{userService, classLevelService, classService}
+func NewAdminHandler(userService service.UserService, classLevelService service.ClassLevelService, classService service.ClassService, settingService service.SettingService) AdminHandler {
+	return &adminHandler{userService, classLevelService, classService, settingService}
 }
 
 func (h *adminHandler) CreateUser(c *gin.Context) {
@@ -411,7 +414,6 @@ func (h *adminHandler) CreateClass(c *gin.Context) {
 	}
 	newClass, err := h.classService.CreateClass(input)
 	if err != nil {
-		// ... (penanganan error duplikat, dll)
 		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -435,7 +437,6 @@ func (h *adminHandler) FindClassByID(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	class, err := h.classService.FindClassByID(uint(id))
 	if err != nil {
-		// ... (penanganan error not found)
 		utils.SendErrorResponse(c, http.StatusNotFound, "Kelas tidak ditemukan")
 		return
 	}
@@ -458,7 +459,6 @@ func (h *adminHandler) UpdateClass(c *gin.Context) {
 	}
 	updatedClass, err := h.classService.UpdateClass(uint(id), input)
 	if err != nil {
-		// ... (penanganan error not found, duplikat, dll)
 		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -469,9 +469,39 @@ func (h *adminHandler) DeleteClass(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	err := h.classService.DeleteClass(uint(id))
 	if err != nil {
-		// ... (penanganan error not found)
 		utils.SendErrorResponse(c, http.StatusNotFound, "Kelas tidak ditemukan")
 		return
 	}
 	utils.SendSuccessResponse(c, http.StatusOK, "Kelas berhasil dihapus", nil)
+}
+
+func (h *adminHandler) FindAllSettings(c *gin.Context) {
+	settings, err := h.settingService.FindAllSettings()
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data pengaturan")
+		return
+	}
+
+	response := make(map[string]string)
+	for _, setting := range settings {
+		response[setting.KeySetting] = setting.ValueSetting
+	}
+
+	utils.SendSuccessResponse(c, http.StatusOK, "Data pengaturan berhasil diambil", response)
+}
+
+func (h *adminHandler) UpdateSettings(c *gin.Context) {
+	var req map[string]string
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
+		return
+	}
+
+	err := h.settingService.UpdateSettings(req)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui pengaturan")
+		return
+	}
+
+	utils.SendSuccessResponse(c, http.StatusOK, "Pengaturan berhasil diperbarui", nil)
 }

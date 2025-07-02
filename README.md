@@ -299,6 +299,53 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 </details>
 
+<details>
+<summary><b>Admin - Manajemen Pengaturan Sistem</b></summary>
+
+### Mendapatkan Semua Pengaturan
+-   `GET /api/v1/admin/settings`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Response Sukses (200 OK)**:
+    ```json
+    {
+        "status": "success",
+        "message": "Data pengaturan berhasil diambil",
+        "data": {
+            "nama_sekolah": "SD Negeri 1 Contoh",
+            "alamat_sekolah": "Jl. Pendidikan No. 1, Kota",
+            "telepon_sekolah": "021-1234567",
+            "email_sekolah": "info@sekolah.sch.id",
+            "tahun_ajaran_aktif": "2024/2025",
+            "midtrans_server_key": "",
+            "midtrans_client_key": "",
+            "midtrans_environment": "sandbox"
+        }
+    }
+    ```
+
+### Memperbarui Pengaturan
+-   `PUT /api/v1/admin/settings`
+-   **Otorisasi**: Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "nama_sekolah": "SDN Koding Jaya",
+        "telepon_sekolah": "021-111222"
+    }
+    ```
+-   **Response Sukses (200 OK)**:
+    ```json
+    {
+        "status": "success",
+        "message": "Pengaturan berhasil diperbarui",
+        "data": null
+    }
+    ```
+
+</details>
+
 ## Kontribusi
 
 Kontribusi dalam bentuk *pull request*, isu, atau ide fitur sangat diterima.

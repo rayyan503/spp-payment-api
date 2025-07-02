@@ -38,6 +38,8 @@ func (r *Router) SetupRoutes() {
 		admin.GET("/class-levels/:id", r.adminHandler.FindClassLevelByID)
 		admin.PUT("/class-levels/:id", r.adminHandler.UpdateClassLevel)
 		admin.DELETE("/class-levels/:id", r.adminHandler.DeleteClassLevel)
+		admin.GET("/settings", r.adminHandler.FindAllSettings)
+		admin.PUT("/settings", r.adminHandler.UpdateSettings)
 	}
 
 	// Treasurer routes
