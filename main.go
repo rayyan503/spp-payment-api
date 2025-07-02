@@ -34,6 +34,7 @@ func main() {
 	settingRepo := repository.NewSettingRepository(db)
 	studentRepo := repository.NewStudentRepository(db)
 	periodRepo := repository.NewPeriodRepository(db)
+	billRepo := repository.NewBillRepository(db)
 
 	// Service
 	authService := service.NewAuthService(userRepo, cfg.JWTSecretKey)
@@ -43,11 +44,12 @@ func main() {
 	settingService := service.NewSettingService(settingRepo, db)
 	studentService := service.NewStudentService(studentRepo, userRepo, db)
 	periodService := service.NewPeriodService(periodRepo)
+	billService := service.NewBillService(billRepo)
 
 	// Handler
 	authHandler := handler.NewAuthHandler(authService, userService)
 	adminHandler := handler.NewAdminHandler(userService, classLevelService, classService, settingService)
-	treasurerHandler := handler.NewTreasurerHandler(studentService, periodService)
+	treasurerHandler := handler.NewTreasurerHandler(studentService, periodService, billService)
 
 	router := gin.Default()
 	config := cors.Config{

@@ -347,7 +347,7 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 </details>
 
 <details>
-<summary><b>🧑‍💼 Bendahara - Manajemen Siswa</b></summary>
+<summary><b>Bendahara - Manajemen Siswa</b></summary>
 
 ### Membuat Siswa Baru
 -   `POST /api/v1/treasurer/students`
@@ -417,7 +417,7 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 </details>
 
 <details>
-<summary><b>🧑‍💼 Bendahara - Manajemen Periode SPP</b></summary>
+<summary><b>Bendahara - Manajemen Periode SPP</b></summary>
 
 ### Membuat Periode Baru
 -   `POST /api/v1/treasurer/periods`
@@ -464,6 +464,50 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 ### Menghapus Periode
 -   `DELETE /api/v1/treasurer/periods/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+</details>
+
+<details>
+<summary><b>Bendahara - Manajemen Tagihan</b></summary>
+
+### Generate Tagihan Massal
+-   `POST /api/v1/treasurer/periods/{id}/generate-bills`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Fungsi**: Membuat tagihan SPP untuk semua siswa aktif berdasarkan ID periode yang diberikan.
+
+### Mendapatkan Daftar Tagihan
+-   `GET /api/v1/treasurer/bills`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `page` (angka): Nomor halaman.
+    -   `limit` (angka): Jumlah data per halaman.
+    -   `periode_id` (angka): Filter berdasarkan ID periode.
+    -   `siswa_id` (angka): Filter berdasarkan ID siswa.
+    -   `status_pembayaran` (string): Filter berdasarkan status (`belum_bayar`, `pending`, `lunas`).
+
+### Mendapatkan Detail Tagihan
+-   `GET /api/v1/treasurer/bills/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+
+### Memperbarui Tagihan (Manual)
+-   `PUT /api/v1/treasurer/bills/{id}`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Request Body**:
+    ```json
+    {
+        "jumlah_tagihan": 160000,
+        "status_pembayaran": "lunas"
+    }
+    ```
+
+### Menghapus Tagihan (Manual)
+-   `DELETE /api/v1/treasurer/bills/{id}`
 -   **Otorisasi**: Bendahara, Admin
 -   **Header**: `Authorization: Bearer <TOKEN>`
 

@@ -31,28 +31,6 @@ type UpdatePeriodRequest struct {
 	Status         string `json:"status" binding:"required,oneof=belum_aktif aktif selesai"`
 }
 
-type TreasurerHandler interface {
-	CreateStudent(c *gin.Context)
-	FindAllStudents(c *gin.Context)
-	FindStudentByID(c *gin.Context)
-	UpdateStudent(c *gin.Context)
-	DeleteStudent(c *gin.Context)
-	CreatePeriod(c *gin.Context)
-	FindAllPeriods(c *gin.Context)
-	FindPeriodByID(c *gin.Context)
-	UpdatePeriod(c *gin.Context)
-	DeletePeriod(c *gin.Context)
-}
-
-type treasurerHandler struct {
-	studentService service.StudentService
-	periodService  service.PeriodService
-}
-
-func NewTreasurerHandler(studentService service.StudentService, periodService service.PeriodService) TreasurerHandler {
-	return &treasurerHandler{studentService, periodService}
-}
-
 type CreateStudentRequest struct {
 	Email           string `json:"email" binding:"required,email"`
 	Password        string `json:"password" binding:"required,min=6"`
@@ -61,7 +39,7 @@ type CreateStudentRequest struct {
 	NamaLengkap     string `json:"nama_lengkap" binding:"required"`
 	JenisKelamin    string `json:"jenis_kelamin" binding:"required,oneof=L P"`
 	TempatLahir     string `json:"tempat_lahir"`
-	TanggalLahir    string `json:"tanggal_lahir"` // Format: YYYY-MM-DD
+	TanggalLahir    string `json:"tanggal_lahir"`
 	Alamat          string `json:"alamat"`
 	NamaOrangTua    string `json:"nama_orangtua"`
 	TeleponOrangTua string `json:"telepon_orangtua"`
@@ -101,6 +79,51 @@ type StudentResponse struct {
 	TahunMasuk      int        `json:"tahun_masuk,omitempty"`
 }
 
+type UpdateBillRequest struct {
+	JumlahTagihan    float64 `json:"jumlah_tagihan" binding:"required,gt=0"`
+	StatusPembayaran string  `json:"status_pembayaran" binding:"required,oneof=belum_bayar pending lunas"`
+}
+
+type BillResponse struct {
+	ID                uint      `json:"id"`
+	SiswaID           uint      `json:"siswa_id"`
+	NamaSiswa         string    `json:"nama_siswa"`
+	PeriodeID         uint      `json:"periode_id"`
+	NamaPeriode       string    `json:"nama_periode"`
+	TahunAjaran       string    `json:"tahun_ajaran"`
+	JumlahTagihan     float64   `json:"jumlah_tagihan"`
+	StatusPembayaran  string    `json:"status_pembayaran"`
+	TanggalJatuhTempo time.Time `json:"tanggal_jatuh_tempo"`
+}
+
+type TreasurerHandler interface {
+	CreateStudent(c *gin.Context)
+	FindAllStudents(c *gin.Context)
+	FindStudentByID(c *gin.Context)
+	UpdateStudent(c *gin.Context)
+	DeleteStudent(c *gin.Context)
+	CreatePeriod(c *gin.Context)
+	FindAllPeriods(c *gin.Context)
+	FindPeriodByID(c *gin.Context)
+	UpdatePeriod(c *gin.Context)
+	DeletePeriod(c *gin.Context)
+	GenerateBills(c *gin.Context)
+	FindAllBills(c *gin.Context)
+	FindBillByID(c *gin.Context)
+	UpdateBill(c *gin.Context)
+	DeleteBill(c *gin.Context)
+}
+
+type treasurerHandler struct {
+	studentService service.StudentService
+	periodService  service.PeriodService
+	billService    service.BillService
+}
+
+func NewTreasurerHandler(studentService service.StudentService, periodService service.PeriodService, billService service.BillService) TreasurerHandler {
+	return &treasurerHandler{studentService, periodService, billService}
+}
+
 func formatStudentResponse(student *model.Siswa) StudentResponse {
 	return StudentResponse{
 		ID:              student.ID,
@@ -117,6 +140,20 @@ func formatStudentResponse(student *model.Siswa) StudentResponse {
 		NamaOrangTua:    student.NamaOrangTua,
 		TeleponOrangTua: student.TeleponOrangTua,
 		TahunMasuk:      student.TahunMasuk,
+	}
+}
+
+func formatBillResponse(bill *model.TagihanSPP) BillResponse {
+	return BillResponse{
+		ID:                bill.ID,
+		SiswaID:           bill.SiswaID,
+		NamaSiswa:         bill.Siswa.NamaLengkap,
+		PeriodeID:         bill.PeriodeID,
+		NamaPeriode:       bill.PeriodeSPP.NamaBulan,
+		TahunAjaran:       bill.PeriodeSPP.TahunAjaran,
+		JumlahTagihan:     bill.JumlahTagihan,
+		StatusPembayaran:  bill.StatusPembayaran,
+		TanggalJatuhTempo: bill.TanggalJatuhTempo,
 	}
 }
 
@@ -357,7 +394,6 @@ func (h *treasurerHandler) UpdatePeriod(c *gin.Context) {
 			utils.SendErrorResponse(c, http.StatusNotFound, "Periode tidak ditemukan")
 			return
 		}
-		// Tambahkan penanganan error duplikat jika ada di service
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui periode")
 		return
 	}
@@ -381,4 +417,124 @@ func (h *treasurerHandler) DeletePeriod(c *gin.Context) {
 		return
 	}
 	utils.SendSuccessResponse(c, http.StatusOK, "Periode berhasil dihapus", nil)
+}
+
+func (h *treasurerHandler) GenerateBills(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID periode tidak valid")
+		return
+	}
+
+	err = h.billService.GenerateBillsForPeriod(uint(id))
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal men-generate tagihan: "+err.Error())
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan untuk periode terpilih berhasil di-generate", nil)
+}
+
+func (h *treasurerHandler) FindAllBills(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	periodeID, _ := strconv.Atoi(c.Query("periode_id"))
+	siswaID, _ := strconv.Atoi(c.Query("siswa_id"))
+	status := c.Query("status_pembayaran")
+
+	input := service.FindAllBillsInput{
+		Page:             page,
+		Limit:            limit,
+		PeriodeID:        uint(periodeID),
+		SiswaID:          uint(siswaID),
+		StatusPembayaran: status,
+	}
+
+	bills, total, err := h.billService.FindAllBills(input)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data tagihan")
+		return
+	}
+
+	var responses []BillResponse
+	for _, bill := range bills {
+		responses = append(responses, formatBillResponse(&bill))
+	}
+
+	response := gin.H{
+		"data": responses,
+		"meta": gin.H{
+			"total": total,
+			"page":  page,
+			"limit": limit,
+		},
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Data tagihan berhasil diambil", response)
+}
+
+func (h *treasurerHandler) FindBillByID(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID tagihan tidak valid")
+		return
+	}
+
+	bill, err := h.billService.FindBillByID(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Tagihan tidak ditemukan")
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil detail tagihan")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail tagihan berhasil diambil", formatBillResponse(bill))
+}
+
+func (h *treasurerHandler) UpdateBill(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID tagihan tidak valid")
+		return
+	}
+
+	var req UpdateBillRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
+		return
+	}
+
+	input := service.UpdateBillInput{
+		JumlahTagihan:    req.JumlahTagihan,
+		StatusPembayaran: req.StatusPembayaran,
+	}
+
+	bill, err := h.billService.UpdateBill(uint(id), input)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Tagihan tidak ditemukan")
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui tagihan")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil diperbarui", formatBillResponse(bill))
+}
+
+func (h *treasurerHandler) DeleteBill(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "ID tagihan tidak valid")
+		return
+	}
+
+	err = h.billService.DeleteBill(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Tagihan tidak ditemukan")
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus tagihan")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil dihapus", nil)
 }
