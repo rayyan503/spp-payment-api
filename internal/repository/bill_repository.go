@@ -2,20 +2,13 @@ package repository
 
 import (
 	"github.com/hiuncy/spp-payment-api/internal/model"
+	"github.com/hiuncy/spp-payment-api/internal/utils"
 	"gorm.io/gorm"
 )
 
-type FindAllBillsParams struct {
-	Limit            int
-	Page             int
-	PeriodeID        uint
-	SiswaID          uint
-	StatusPembayaran string
-}
-
 type BillRepository interface {
 	GenerateBills(periodID uint) error
-	FindAll(params FindAllBillsParams) ([]model.TagihanSPP, int64, error)
+	FindAll(params utils.FindAllBillsParams) ([]model.TagihanSPP, int64, error)
 	FindByID(id uint) (*model.TagihanSPP, error)
 	Update(bill *model.TagihanSPP) error
 	Delete(id uint) error
@@ -33,7 +26,7 @@ func (r *billRepository) GenerateBills(periodID uint) error {
 	return r.db.Exec("CALL GenerateTagihanSPP(?)", periodID).Error
 }
 
-func (r *billRepository) FindAll(params FindAllBillsParams) ([]model.TagihanSPP, int64, error) {
+func (r *billRepository) FindAll(params utils.FindAllBillsParams) ([]model.TagihanSPP, int64, error) {
 	var bills []model.TagihanSPP
 	var total int64
 

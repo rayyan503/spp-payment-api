@@ -2,19 +2,13 @@ package repository
 
 import (
 	"github.com/hiuncy/spp-payment-api/internal/model"
+	"github.com/hiuncy/spp-payment-api/internal/utils"
 	"gorm.io/gorm"
 )
 
-type FindAllStudentsParams struct {
-	Limit   int
-	Page    int
-	KelasID uint
-	Search  string
-}
-
 type StudentRepository interface {
 	Create(student *model.Siswa) error
-	FindAll(params FindAllStudentsParams) ([]model.Siswa, int64, error)
+	FindAll(params utils.FindAllStudentsParams) ([]model.Siswa, int64, error)
 	FindByID(id uint) (*model.Siswa, error)
 	FindByNISN(nisn string) (*model.Siswa, error)
 	Update(student *model.Siswa) error
@@ -34,7 +28,7 @@ func (r *studentRepository) Create(student *model.Siswa) error {
 	return r.db.Table("siswa").Create(student).Error
 }
 
-func (r *studentRepository) FindAll(params FindAllStudentsParams) ([]model.Siswa, int64, error) {
+func (r *studentRepository) FindAll(params utils.FindAllStudentsParams) ([]model.Siswa, int64, error) {
 	var students []model.Siswa
 	var total int64
 

@@ -4,24 +4,14 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/service"
 	"github.com/hiuncy/spp-payment-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
-
-type PaymentHistoryResponse struct {
-	OrderID           string     `json:"order_id"`
-	NamaPeriode       string     `json:"nama_periode"`
-	TahunAjaran       string     `json:"tahun_ajaran"`
-	JumlahBayar       float64    `json:"jumlah_bayar"`
-	StatusPembayaran  string     `json:"status_pembayaran"`
-	MetodePembayaran  *string    `json:"metode_pembayaran,omitempty"`
-	TanggalPembayaran *time.Time `json:"tanggal_pembayaran,omitempty"`
-}
 
 type StudentHandler interface {
 	GetProfile(c *gin.Context)
@@ -53,7 +43,7 @@ func (h *studentHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	response := formatStudentResponse(student)
+	response := utils.FormatStudentResponse(student)
 	utils.SendSuccessResponse(c, http.StatusOK, "Profil siswa berhasil diambil", response)
 }
 
@@ -68,7 +58,7 @@ func (h *studentHandler) FindMyBills(c *gin.Context) {
 
 	status := c.Query("status")
 
-	input := service.FindAllBillsInput{
+	input := dto.FindAllBillsInput{
 		SiswaID:          student.ID,
 		StatusPembayaran: status,
 		Limit:            100,
@@ -81,9 +71,9 @@ func (h *studentHandler) FindMyBills(c *gin.Context) {
 		return
 	}
 
-	var responses []BillResponse
+	var responses []utils.BillResponse
 	for _, bill := range bills {
-		responses = append(responses, FormatBillResponse(&bill))
+		responses = append(responses, utils.FormatBillResponse(&bill))
 	}
 
 	utils.SendSuccessResponse(c, http.StatusOK, "Data tagihan berhasil diambil", responses)
@@ -115,10 +105,9 @@ func (h *studentHandler) GetPaymentHistory(c *gin.Context) {
 		return
 	}
 
-	// Format response
-	var responses []PaymentHistoryResponse
+	var responses []utils.PaymentHistoryResponse
 	for _, p := range payments {
-		responses = append(responses, PaymentHistoryResponse{
+		responses = append(responses, utils.PaymentHistoryResponse{
 			OrderID:           p.OrderID,
 			NamaPeriode:       p.TagihanSPP.PeriodeSPP.NamaBulan,
 			TahunAjaran:       p.TagihanSPP.PeriodeSPP.TahunAjaran,

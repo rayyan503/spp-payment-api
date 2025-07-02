@@ -4,97 +4,14 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/service"
 	"github.com/hiuncy/spp-payment-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hiuncy/spp-payment-api/internal/model"
 	"gorm.io/gorm"
 )
-
-type PeriodRequest struct {
-	TahunAjaran    string `json:"tahun_ajaran" binding:"required"`
-	Bulan          int    `json:"bulan" binding:"required,gte=1,lte=12"`
-	NamaBulan      string `json:"nama_bulan" binding:"required"`
-	TanggalMulai   string `json:"tanggal_mulai" binding:"required"`
-	TanggalSelesai string `json:"tanggal_selesai" binding:"required"`
-}
-
-type UpdatePeriodRequest struct {
-	TahunAjaran    string `json:"tahun_ajaran" binding:"required"`
-	Bulan          int    `json:"bulan" binding:"required,gte=1,lte=12"`
-	NamaBulan      string `json:"nama_bulan" binding:"required"`
-	TanggalMulai   string `json:"tanggal_mulai" binding:"required"`
-	TanggalSelesai string `json:"tanggal_selesai" binding:"required"`
-	Status         string `json:"status" binding:"required,oneof=belum_aktif aktif selesai"`
-}
-
-type CreateStudentRequest struct {
-	Email           string `json:"email" binding:"required,email"`
-	Password        string `json:"password" binding:"required,min=6"`
-	NISN            string `json:"nisn" binding:"required"`
-	KelasID         uint   `json:"kelas_id" binding:"required"`
-	NamaLengkap     string `json:"nama_lengkap" binding:"required"`
-	JenisKelamin    string `json:"jenis_kelamin" binding:"required,oneof=L P"`
-	TempatLahir     string `json:"tempat_lahir"`
-	TanggalLahir    string `json:"tanggal_lahir"`
-	Alamat          string `json:"alamat"`
-	NamaOrangTua    string `json:"nama_orangtua"`
-	TeleponOrangTua string `json:"telepon_orangtua"`
-	TahunMasuk      int    `json:"tahun_masuk"`
-}
-
-type UpdateStudentRequest struct {
-	NISN            string `json:"nisn" binding:"required"`
-	KelasID         uint   `json:"kelas_id" binding:"required"`
-	NamaLengkap     string `json:"nama_lengkap" binding:"required"`
-	JenisKelamin    string `json:"jenis_kelamin" binding:"required,oneof=L P"`
-	TempatLahir     string `json:"tempat_lahir"`
-	TanggalLahir    string `json:"tanggal_lahir"`
-	Alamat          string `json:"alamat"`
-	NamaOrangTua    string `json:"nama_orangtua"`
-	TeleponOrangTua string `json:"telepon_orangtua"`
-	TahunMasuk      int    `json:"tahun_masuk"`
-	Status          string `json:"status" binding:"required,oneof=aktif pindah lulus keluar"`
-	EmailUser       string `json:"email" binding:"required,email"`
-	StatusUser      string `json:"status_user" binding:"required,oneof=aktif nonaktif"`
-}
-
-type StudentResponse struct {
-	ID              uint       `json:"id"`
-	NISN            string     `json:"nisn"`
-	NamaLengkap     string     `json:"nama_lengkap"`
-	Email           string     `json:"email"`
-	Status          string     `json:"status"`
-	KelasID         uint       `json:"kelas_id"`
-	NamaKelas       string     `json:"nama_kelas"`
-	JenisKelamin    string     `json:"jenis_kelamin"`
-	TempatLahir     string     `json:"tempat_lahir,omitempty"`
-	TanggalLahir    *time.Time `json:"tanggal_lahir,omitempty"`
-	Alamat          string     `json:"alamat,omitempty"`
-	NamaOrangTua    string     `json:"nama_orangtua,omitempty"`
-	TeleponOrangTua string     `json:"telepon_orangtua,omitempty"`
-	TahunMasuk      int        `json:"tahun_masuk,omitempty"`
-}
-
-type UpdateBillRequest struct {
-	JumlahTagihan    float64 `json:"jumlah_tagihan" binding:"required,gt=0"`
-	StatusPembayaran string  `json:"status_pembayaran" binding:"required,oneof=belum_bayar pending lunas"`
-}
-
-type BillResponse struct {
-	ID                uint      `json:"id"`
-	SiswaID           uint      `json:"siswa_id"`
-	NamaSiswa         string    `json:"nama_siswa"`
-	PeriodeID         uint      `json:"periode_id"`
-	NamaPeriode       string    `json:"nama_periode"`
-	TahunAjaran       string    `json:"tahun_ajaran"`
-	JumlahTagihan     float64   `json:"jumlah_tagihan"`
-	StatusPembayaran  string    `json:"status_pembayaran"`
-	TanggalJatuhTempo time.Time `json:"tanggal_jatuh_tempo"`
-}
 
 type TreasurerHandler interface {
 	CreateStudent(c *gin.Context)
@@ -128,41 +45,8 @@ func NewTreasurerHandler(studentService service.StudentService, periodService se
 	return &treasurerHandler{studentService, periodService, billService, reportService}
 }
 
-func formatStudentResponse(student *model.Siswa) StudentResponse {
-	return StudentResponse{
-		ID:              student.ID,
-		NISN:            student.NISN,
-		NamaLengkap:     student.NamaLengkap,
-		Email:           student.User.Email,
-		Status:          student.Status,
-		KelasID:         student.KelasID,
-		NamaKelas:       student.Kelas.NamaKelas,
-		JenisKelamin:    student.JenisKelamin,
-		TempatLahir:     student.TempatLahir,
-		TanggalLahir:    student.TanggalLahir,
-		Alamat:          student.Alamat,
-		NamaOrangTua:    student.NamaOrangtua,
-		TeleponOrangTua: student.TeleponOrangtua,
-		TahunMasuk:      student.TahunMasuk,
-	}
-}
-
-func FormatBillResponse(bill *model.TagihanSPP) BillResponse {
-	return BillResponse{
-		ID:                bill.ID,
-		SiswaID:           bill.SiswaID,
-		NamaSiswa:         bill.Siswa.NamaLengkap,
-		PeriodeID:         bill.PeriodeID,
-		NamaPeriode:       bill.PeriodeSPP.NamaBulan,
-		TahunAjaran:       bill.PeriodeSPP.TahunAjaran,
-		JumlahTagihan:     bill.JumlahTagihan,
-		StatusPembayaran:  bill.StatusPembayaran,
-		TanggalJatuhTempo: bill.TanggalJatuhTempo,
-	}
-}
-
 func (h *treasurerHandler) CreateStudent(c *gin.Context) {
-	var req CreateStudentRequest
+	var req utils.CreateStudentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -211,9 +95,9 @@ func (h *treasurerHandler) FindAllStudents(c *gin.Context) {
 		return
 	}
 
-	var responses []StudentResponse
+	var responses []utils.StudentResponse
 	for _, student := range students {
-		responses = append(responses, formatStudentResponse(&student))
+		responses = append(responses, utils.FormatStudentResponse(&student))
 	}
 
 	response := gin.H{
@@ -244,7 +128,7 @@ func (h *treasurerHandler) FindStudentByID(c *gin.Context) {
 		return
 	}
 
-	utils.SendSuccessResponse(c, http.StatusOK, "Detail siswa berhasil diambil", formatStudentResponse(student))
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail siswa berhasil diambil", utils.FormatStudentResponse(student))
 }
 
 func (h *treasurerHandler) UpdateStudent(c *gin.Context) {
@@ -254,7 +138,7 @@ func (h *treasurerHandler) UpdateStudent(c *gin.Context) {
 		return
 	}
 
-	var req UpdateStudentRequest
+	var req utils.UpdateStudentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -290,7 +174,7 @@ func (h *treasurerHandler) UpdateStudent(c *gin.Context) {
 		return
 	}
 
-	utils.SendSuccessResponse(c, http.StatusOK, "Data siswa berhasil diperbarui", formatStudentResponse(student))
+	utils.SendSuccessResponse(c, http.StatusOK, "Data siswa berhasil diperbarui", utils.FormatStudentResponse(student))
 }
 
 func (h *treasurerHandler) DeleteStudent(c *gin.Context) {
@@ -314,7 +198,7 @@ func (h *treasurerHandler) DeleteStudent(c *gin.Context) {
 }
 
 func (h *treasurerHandler) CreatePeriod(c *gin.Context) {
-	var req PeriodRequest
+	var req utils.PeriodRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -377,7 +261,7 @@ func (h *treasurerHandler) UpdatePeriod(c *gin.Context) {
 		return
 	}
 
-	var req UpdatePeriodRequest
+	var req utils.UpdatePeriodRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -445,7 +329,7 @@ func (h *treasurerHandler) FindAllBills(c *gin.Context) {
 	siswaID, _ := strconv.Atoi(c.Query("siswa_id"))
 	status := c.Query("status_pembayaran")
 
-	input := service.FindAllBillsInput{
+	input := dto.FindAllBillsInput{
 		Page:             page,
 		Limit:            limit,
 		PeriodeID:        uint(periodeID),
@@ -459,9 +343,9 @@ func (h *treasurerHandler) FindAllBills(c *gin.Context) {
 		return
 	}
 
-	var responses []BillResponse
+	var responses []utils.BillResponse
 	for _, bill := range bills {
-		responses = append(responses, FormatBillResponse(&bill))
+		responses = append(responses, utils.FormatBillResponse(&bill))
 	}
 
 	response := gin.H{
@@ -491,7 +375,7 @@ func (h *treasurerHandler) FindBillByID(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil detail tagihan")
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusOK, "Detail tagihan berhasil diambil", FormatBillResponse(bill))
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail tagihan berhasil diambil", utils.FormatBillResponse(bill))
 }
 
 func (h *treasurerHandler) UpdateBill(c *gin.Context) {
@@ -501,13 +385,13 @@ func (h *treasurerHandler) UpdateBill(c *gin.Context) {
 		return
 	}
 
-	var req UpdateBillRequest
+	var req utils.UpdateBillRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
 	}
 
-	input := service.UpdateBillInput{
+	input := dto.UpdateBillInput{
 		JumlahTagihan:    req.JumlahTagihan,
 		StatusPembayaran: req.StatusPembayaran,
 	}
@@ -521,7 +405,7 @@ func (h *treasurerHandler) UpdateBill(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui tagihan")
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil diperbarui", FormatBillResponse(bill))
+	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil diperbarui", utils.FormatBillResponse(bill))
 }
 
 func (h *treasurerHandler) DeleteBill(c *gin.Context) {

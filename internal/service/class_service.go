@@ -3,31 +3,17 @@ package service
 import (
 	"errors"
 
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/repository"
 	"gorm.io/gorm"
 )
 
-type CreateClassInput struct {
-	TingkatID uint
-	NamaKelas string
-	WaliKelas string
-	Kapasitas int
-}
-
-type UpdateClassInput struct {
-	TingkatID uint
-	NamaKelas string
-	WaliKelas string
-	Kapasitas int
-	Status    string
-}
-
 type ClassService interface {
-	CreateClass(input CreateClassInput) (*model.Kelas, error)
+	CreateClass(input dto.CreateClassInput) (*model.Kelas, error)
 	FindAllClasses() ([]model.Kelas, error)
 	FindClassByID(id uint) (*model.Kelas, error)
-	UpdateClass(id uint, input UpdateClassInput) (*model.Kelas, error)
+	UpdateClass(id uint, input dto.UpdateClassInput) (*model.Kelas, error)
 	DeleteClass(id uint) error
 }
 
@@ -39,7 +25,7 @@ func NewClassService(repo repository.ClassRepository) ClassService {
 	return &classService{repo}
 }
 
-func (s *classService) CreateClass(input CreateClassInput) (*model.Kelas, error) {
+func (s *classService) CreateClass(input dto.CreateClassInput) (*model.Kelas, error) {
 	_, err := s.repo.FindByName(input.NamaKelas)
 	if err == nil || !errors.Is(err, gorm.ErrRecordNotFound) {
 		if err == nil {
@@ -61,7 +47,6 @@ func (s *classService) CreateClass(input CreateClassInput) (*model.Kelas, error)
 		return nil, err
 	}
 
-	// Ambil kembali data lengkap dengan preload
 	return s.repo.FindByID(newClass.ID)
 }
 
@@ -73,7 +58,7 @@ func (s *classService) FindClassByID(id uint) (*model.Kelas, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *classService) UpdateClass(id uint, input UpdateClassInput) (*model.Kelas, error) {
+func (s *classService) UpdateClass(id uint, input dto.UpdateClassInput) (*model.Kelas, error) {
 	class, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err

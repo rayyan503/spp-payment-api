@@ -3,30 +3,18 @@ package service
 import (
 	"errors"
 
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/repository"
 
 	"gorm.io/gorm"
 )
 
-type CreateClassLevelInput struct {
-	Tingkat     int
-	NamaTingkat string
-	BiayaSPP    float64
-}
-
-type UpdateClassLevelInput struct {
-	Tingkat     int
-	NamaTingkat string
-	BiayaSPP    float64
-	Status      string
-}
-
 type ClassLevelService interface {
-	CreateClassLevel(input CreateClassLevelInput) (*model.TingkatKelas, error)
+	CreateClassLevel(input dto.CreateClassLevelInput) (*model.TingkatKelas, error)
 	FindAllClassLevels() ([]model.TingkatKelas, error)
 	FindClassLevelByID(id uint) (*model.TingkatKelas, error)
-	UpdateClassLevel(id uint, input UpdateClassLevelInput) (*model.TingkatKelas, error)
+	UpdateClassLevel(id uint, input dto.UpdateClassLevelInput) (*model.TingkatKelas, error)
 	DeleteClassLevel(id uint) error
 }
 
@@ -38,7 +26,7 @@ func NewClassLevelService(repo repository.ClassLevelRepository) ClassLevelServic
 	return &classLevelService{repo}
 }
 
-func (s *classLevelService) CreateClassLevel(input CreateClassLevelInput) (*model.TingkatKelas, error) {
+func (s *classLevelService) CreateClassLevel(input dto.CreateClassLevelInput) (*model.TingkatKelas, error) {
 	_, err := s.repo.FindByTingkat(input.Tingkat)
 	if err == nil || !errors.Is(err, gorm.ErrRecordNotFound) {
 		if err == nil {
@@ -78,7 +66,7 @@ func (s *classLevelService) FindClassLevelByID(id uint) (*model.TingkatKelas, er
 	return classLevel, nil
 }
 
-func (s *classLevelService) UpdateClassLevel(id uint, input UpdateClassLevelInput) (*model.TingkatKelas, error) {
+func (s *classLevelService) UpdateClassLevel(id uint, input dto.UpdateClassLevelInput) (*model.TingkatKelas, error) {
 	classLevel, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err

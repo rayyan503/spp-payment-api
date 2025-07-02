@@ -1,5 +1,3 @@
-// File: internal/handler/midtrans_handler.go (File Baru)
-
 package handler
 
 import (

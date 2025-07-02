@@ -3,37 +3,18 @@ package service
 import (
 	"errors"
 
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/repository"
 	"github.com/hiuncy/spp-payment-api/internal/utils"
 	"gorm.io/gorm"
 )
 
-type CreateUserInput struct {
-	NamaLengkap string
-	Email       string
-	Password    string
-	RoleID      uint
-}
-
-type FindAllUsersInput struct {
-	Page   int
-	Limit  int
-	RoleID uint
-	Search string
-}
-
-type UpdateUserInput struct {
-	NamaLengkap string
-	Email       string
-	RoleID      uint
-}
-
 type UserService interface {
 	GetUserProfile(userID uint) (*model.User, error)
-	CreateUser(input CreateUserInput) (*model.User, error)
-	FindAllUsers(input FindAllUsersInput) ([]model.User, int64, error)
-	UpdateUser(id uint, input UpdateUserInput) (*model.User, error)
+	CreateUser(input dto.CreateUserInput) (*model.User, error)
+	FindAllUsers(input dto.FindAllUsersInput) ([]model.User, int64, error)
+	UpdateUser(id uint, input dto.UpdateUserInput) (*model.User, error)
 	DeleteUser(id uint) error
 }
 
@@ -49,7 +30,7 @@ func (s *userService) GetUserProfile(userID uint) (*model.User, error) {
 	return s.userRepo.FindByID(userID)
 }
 
-func (s *userService) CreateUser(input CreateUserInput) (*model.User, error) {
+func (s *userService) CreateUser(input dto.CreateUserInput) (*model.User, error) {
 	_, err := s.userRepo.FindByEmail(input.Email)
 	if err == nil || !errors.Is(err, gorm.ErrRecordNotFound) {
 		if err == nil {
@@ -84,7 +65,7 @@ func (s *userService) CreateUser(input CreateUserInput) (*model.User, error) {
 	return createdUser, nil
 }
 
-func (s *userService) FindAllUsers(input FindAllUsersInput) ([]model.User, int64, error) {
+func (s *userService) FindAllUsers(input dto.FindAllUsersInput) ([]model.User, int64, error) {
 	if input.Page <= 0 {
 		input.Page = 1
 	}
@@ -92,7 +73,7 @@ func (s *userService) FindAllUsers(input FindAllUsersInput) ([]model.User, int64
 		input.Limit = 10
 	}
 
-	params := repository.FindAllUsersParams{
+	params := utils.FindAllUsersParams{
 		Page:   input.Page,
 		Limit:  input.Limit,
 		RoleID: input.RoleID,
@@ -107,7 +88,7 @@ func (s *userService) FindAllUsers(input FindAllUsersInput) ([]model.User, int64
 	return users, total, nil
 }
 
-func (s *userService) UpdateUser(id uint, input UpdateUserInput) (*model.User, error) {
+func (s *userService) UpdateUser(id uint, input dto.UpdateUserInput) (*model.User, error) {
 	user, err := s.userRepo.FindByID(id)
 	if err != nil {
 		return nil, err

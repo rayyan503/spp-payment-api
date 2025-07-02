@@ -1,28 +1,17 @@
 package service
 
 import (
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/repository"
+	"github.com/hiuncy/spp-payment-api/internal/utils"
 )
-
-type FindAllBillsInput struct {
-	Page             int
-	Limit            int
-	PeriodeID        uint
-	SiswaID          uint
-	StatusPembayaran string
-}
-
-type UpdateBillInput struct {
-	JumlahTagihan    float64
-	StatusPembayaran string
-}
 
 type BillService interface {
 	GenerateBillsForPeriod(periodID uint) error
-	FindAllBills(input FindAllBillsInput) ([]model.TagihanSPP, int64, error)
+	FindAllBills(input dto.FindAllBillsInput) ([]model.TagihanSPP, int64, error)
 	FindBillByID(id uint) (*model.TagihanSPP, error)
-	UpdateBill(id uint, input UpdateBillInput) (*model.TagihanSPP, error)
+	UpdateBill(id uint, input dto.UpdateBillInput) (*model.TagihanSPP, error)
 	DeleteBill(id uint) error
 }
 
@@ -38,14 +27,14 @@ func (s *billService) GenerateBillsForPeriod(periodID uint) error {
 	return s.repo.GenerateBills(periodID)
 }
 
-func (s *billService) FindAllBills(input FindAllBillsInput) ([]model.TagihanSPP, int64, error) {
+func (s *billService) FindAllBills(input dto.FindAllBillsInput) ([]model.TagihanSPP, int64, error) {
 	if input.Page <= 0 {
 		input.Page = 1
 	}
 	if input.Limit <= 0 {
 		input.Limit = 10
 	}
-	params := repository.FindAllBillsParams{
+	params := utils.FindAllBillsParams{
 		Page:             input.Page,
 		Limit:            input.Limit,
 		PeriodeID:        input.PeriodeID,
@@ -59,7 +48,7 @@ func (s *billService) FindBillByID(id uint) (*model.TagihanSPP, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *billService) UpdateBill(id uint, input UpdateBillInput) (*model.TagihanSPP, error) {
+func (s *billService) UpdateBill(id uint, input dto.UpdateBillInput) (*model.TagihanSPP, error) {
 	bill, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err

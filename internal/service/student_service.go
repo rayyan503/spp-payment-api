@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/model"
 	"github.com/hiuncy/spp-payment-api/internal/repository"
 	"github.com/hiuncy/spp-payment-api/internal/utils"
@@ -11,52 +12,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type CreateStudentInput struct {
-	// User fields
-	Email    string
-	Password string
-	// Siswa fields
-	NISN            string
-	KelasID         uint
-	NamaLengkap     string
-	JenisKelamin    string
-	TempatLahir     string
-	TanggalLahir    string
-	Alamat          string
-	NamaOrangTua    string
-	TeleponOrangTua string
-	TahunMasuk      int
-}
-
-type UpdateStudentInput struct {
-	NISN            string
-	KelasID         uint
-	NamaLengkap     string
-	JenisKelamin    string
-	TempatLahir     string
-	TanggalLahir    string
-	Alamat          string
-	NamaOrangTua    string
-	TeleponOrangTua string
-	TahunMasuk      int
-	Status          string
-	// User fields
-	EmailUser  string
-	StatusUser string
-}
-
-type FindAllStudentsInput struct {
-	Page    int
-	Limit   int
-	KelasID uint
-	Search  string
-}
-
 type StudentService interface {
-	CreateStudent(input CreateStudentInput) (*model.Siswa, error)
-	FindAllStudents(input FindAllStudentsInput) ([]model.Siswa, int64, error)
+	CreateStudent(input dto.CreateStudentInput) (*model.Siswa, error)
+	FindAllStudents(input dto.FindAllStudentsInput) ([]model.Siswa, int64, error)
 	FindStudentByID(id uint) (*model.Siswa, error)
-	UpdateStudent(id uint, input UpdateStudentInput) (*model.Siswa, error)
+	UpdateStudent(id uint, input dto.UpdateStudentInput) (*model.Siswa, error)
 	DeleteStudent(id uint) error
 	GetStudentProfile(userID uint) (*model.Siswa, error)
 }
@@ -71,7 +31,7 @@ func NewStudentService(studentRepo repository.StudentRepository, userRepo reposi
 	return &studentService{studentRepo, userRepo, db}
 }
 
-func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, error) {
+func (s *studentService) CreateStudent(input dto.CreateStudentInput) (*model.Siswa, error) {
 	tx := s.db.Begin()
 	if tx.Error != nil {
 		return nil, tx.Error
@@ -140,14 +100,14 @@ func (s *studentService) CreateStudent(input CreateStudentInput) (*model.Siswa, 
 	return s.studentRepo.FindByID(newStudent.ID)
 }
 
-func (s *studentService) FindAllStudents(input FindAllStudentsInput) ([]model.Siswa, int64, error) {
+func (s *studentService) FindAllStudents(input dto.FindAllStudentsInput) ([]model.Siswa, int64, error) {
 	if input.Page <= 0 {
 		input.Page = 1
 	}
 	if input.Limit <= 0 {
 		input.Limit = 10
 	}
-	params := repository.FindAllStudentsParams{
+	params := utils.FindAllStudentsParams{
 		Page:    input.Page,
 		Limit:   input.Limit,
 		KelasID: input.KelasID,
@@ -160,7 +120,7 @@ func (s *studentService) FindStudentByID(id uint) (*model.Siswa, error) {
 	return s.studentRepo.FindByID(id)
 }
 
-func (s *studentService) UpdateStudent(id uint, input UpdateStudentInput) (*model.Siswa, error) {
+func (s *studentService) UpdateStudent(id uint, input dto.UpdateStudentInput) (*model.Siswa, error) {
 	student, err := s.studentRepo.FindByID(id)
 	if err != nil {
 		return nil, err

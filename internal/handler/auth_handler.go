@@ -8,18 +8,6 @@ import (
 	"github.com/hiuncy/spp-payment-api/internal/utils"
 )
 
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-type UserResponse struct {
-	ID          uint   `json:"id"`
-	NamaLengkap string `json:"nama_lengkap"`
-	Email       string `json:"email"`
-	Role        string `json:"role"`
-}
-
 type AuthHandler interface {
 	Login(c *gin.Context)
 	GetMe(c *gin.Context)
@@ -35,7 +23,7 @@ func NewAuthHandler(authService service.AuthService, userService service.UserSer
 }
 
 func (h *authHandler) Login(c *gin.Context) {
-	var req LoginRequest
+	var req utils.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -63,7 +51,7 @@ func (h *authHandler) GetMe(c *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
+	response := utils.UserResponse{
 		ID:          user.ID,
 		NamaLengkap: user.NamaLengkap,
 		Email:       user.Email,

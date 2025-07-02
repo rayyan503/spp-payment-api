@@ -2,22 +2,16 @@ package repository
 
 import (
 	"github.com/hiuncy/spp-payment-api/internal/model"
+	"github.com/hiuncy/spp-payment-api/internal/utils"
 
 	"gorm.io/gorm"
 )
-
-type FindAllUsersParams struct {
-	Limit  int
-	Page   int
-	RoleID uint
-	Search string
-}
 
 type UserRepository interface {
 	FindByEmail(email string) (*model.User, error)
 	FindByID(id uint) (*model.User, error)
 	Create(user *model.User) error
-	FindAll(params FindAllUsersParams) ([]model.User, int64, error)
+	FindAll(params utils.FindAllUsersParams) ([]model.User, int64, error)
 	Update(user *model.User) error
 	Delete(id uint) error
 }
@@ -52,7 +46,7 @@ func (r *userRepository) Create(user *model.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *userRepository) FindAll(params FindAllUsersParams) ([]model.User, int64, error) {
+func (r *userRepository) FindAll(params utils.FindAllUsersParams) ([]model.User, int64, error) {
 	var users []model.User
 	var total int64
 

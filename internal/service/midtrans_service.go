@@ -1,5 +1,3 @@
-// File: internal/service/midtrans_service.go (File Baru)
-
 package service
 
 import (

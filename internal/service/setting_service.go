@@ -13,7 +13,7 @@ type SettingService interface {
 
 type settingService struct {
 	repo repository.SettingRepository
-	db   *gorm.DB // Diperlukan untuk transaksi
+	db   *gorm.DB
 }
 
 func NewSettingService(repo repository.SettingRepository, db *gorm.DB) SettingService {

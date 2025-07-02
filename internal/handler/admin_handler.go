@@ -5,65 +5,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/hiuncy/spp-payment-api/internal/model"
+	"github.com/hiuncy/spp-payment-api/internal/dto"
 	"github.com/hiuncy/spp-payment-api/internal/service"
 	"github.com/hiuncy/spp-payment-api/internal/utils"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
-
-type CreateUserRequest struct {
-	NamaLengkap string `json:"nama_lengkap" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=6"`
-	RoleID      uint   `json:"role_id" binding:"required"`
-}
-
-type UpdateUserRequest struct {
-	NamaLengkap string `json:"nama_lengkap" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	RoleID      uint   `json:"role_id" binding:"required"`
-}
-
-type CreateClassLevelRequest struct {
-	Tingkat     int     `json:"tingkat" binding:"required,gte=1,lte=6"`
-	NamaTingkat string  `json:"nama_tingkat" binding:"required"`
-	BiayaSPP    float64 `json:"biaya_spp" binding:"required,gt=0"`
-}
-
-type UpdateClassLevelRequest struct {
-	Tingkat     int     `json:"tingkat" binding:"required,gte=1,lte=6"`
-	NamaTingkat string  `json:"nama_tingkat" binding:"required"`
-	BiayaSPP    float64 `json:"biaya_spp" binding:"required,gt=0"`
-	Status      string  `json:"status" binding:"required,oneof=aktif nonaktif"`
-}
-
-type ClassRequest struct {
-	TingkatID uint   `json:"tingkat_id" binding:"required"`
-	NamaKelas string `json:"nama_kelas" binding:"required"`
-	WaliKelas string `json:"wali_kelas"`
-	Kapasitas int    `json:"kapasitas" binding:"gte=0"`
-}
-
-type UpdateClassRequest struct {
-	TingkatID uint   `json:"tingkat_id" binding:"required"`
-	NamaKelas string `json:"nama_kelas" binding:"required"`
-	WaliKelas string `json:"wali_kelas"`
-	Kapasitas int    `json:"kapasitas" binding:"gte=0"`
-	Status    string `json:"status" binding:"required,oneof=aktif nonaktif"`
-}
-
-type ClassResponse struct {
-	ID          uint    `json:"id"`
-	NamaKelas   string  `json:"nama_kelas"`
-	WaliKelas   string  `json:"wali_kelas"`
-	Kapasitas   int     `json:"kapasitas"`
-	Status      string  `json:"status"`
-	TingkatID   uint    `json:"tingkat_id"`
-	NamaTingkat string  `json:"nama_tingkat"`
-	BiayaSPP    float64 `json:"biaya_spp"`
-}
 
 type AdminHandler interface {
 	CreateUser(c *gin.Context)
@@ -97,7 +45,7 @@ func NewAdminHandler(userService service.UserService, classLevelService service.
 }
 
 func (h *adminHandler) CreateUser(c *gin.Context) {
-	var req CreateUserRequest
+	var req utils.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -120,7 +68,7 @@ func (h *adminHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
+	response := utils.UserResponse{
 		ID:          createdUser.ID,
 		NamaLengkap: createdUser.NamaLengkap,
 		Email:       createdUser.Email,
@@ -149,9 +97,9 @@ func (h *adminHandler) FindAllUsers(c *gin.Context) {
 		return
 	}
 
-	var userResponses []UserResponse
+	var userResponses []utils.UserResponse
 	for _, user := range users {
-		userResponses = append(userResponses, UserResponse{
+		userResponses = append(userResponses, utils.UserResponse{
 			ID:          user.ID,
 			NamaLengkap: user.NamaLengkap,
 			Email:       user.Email,
@@ -189,7 +137,7 @@ func (h *adminHandler) FindUserByID(c *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
+	response := utils.UserResponse{
 		ID:          user.ID,
 		NamaLengkap: user.NamaLengkap,
 		Email:       user.Email,
@@ -207,7 +155,7 @@ func (h *adminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var req UpdateUserRequest
+	var req utils.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
@@ -233,7 +181,7 @@ func (h *adminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
+	response := utils.UserResponse{
 		ID:          updatedUser.ID,
 		NamaLengkap: updatedUser.NamaLengkap,
 		Email:       updatedUser.Email,
@@ -272,13 +220,13 @@ func (h *adminHandler) DeleteUser(c *gin.Context) {
 }
 
 func (h *adminHandler) CreateClassLevel(c *gin.Context) {
-	var req CreateClassLevelRequest
+	var req utils.CreateClassLevelRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
 	}
 
-	input := service.CreateClassLevelInput{
+	input := dto.CreateClassLevelInput{
 		Tingkat:     req.Tingkat,
 		NamaTingkat: req.NamaTingkat,
 		BiayaSPP:    req.BiayaSPP,
@@ -336,13 +284,13 @@ func (h *adminHandler) UpdateClassLevel(c *gin.Context) {
 		return
 	}
 
-	var req UpdateClassLevelRequest
+	var req utils.UpdateClassLevelRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
 	}
 
-	input := service.UpdateClassLevelInput{
+	input := dto.UpdateClassLevelInput{
 		Tingkat:     req.Tingkat,
 		NamaTingkat: req.NamaTingkat,
 		BiayaSPP:    req.BiayaSPP,
@@ -387,26 +335,13 @@ func (h *adminHandler) DeleteClassLevel(c *gin.Context) {
 	utils.SendSuccessResponse(c, http.StatusOK, "Data tingkat kelas berhasil dihapus", nil)
 }
 
-func formatClassResponse(class *model.Kelas) ClassResponse {
-	return ClassResponse{
-		ID:          class.ID,
-		NamaKelas:   class.NamaKelas,
-		WaliKelas:   class.WaliKelas,
-		Kapasitas:   class.Kapasitas,
-		Status:      class.Status,
-		TingkatID:   class.TingkatID,
-		NamaTingkat: class.TingkatKelas.NamaTingkat,
-		BiayaSPP:    class.TingkatKelas.BiayaSPP,
-	}
-}
-
 func (h *adminHandler) CreateClass(c *gin.Context) {
-	var req ClassRequest
+	var req utils.ClassRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
 	}
-	input := service.CreateClassInput{
+	input := dto.CreateClassInput{
 		TingkatID: req.TingkatID,
 		NamaKelas: req.NamaKelas,
 		WaliKelas: req.WaliKelas,
@@ -417,7 +352,7 @@ func (h *adminHandler) CreateClass(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusCreated, "Kelas berhasil dibuat", formatClassResponse(newClass))
+	utils.SendSuccessResponse(c, http.StatusCreated, "Kelas berhasil dibuat", utils.FormatClassResponse(newClass))
 }
 
 func (h *adminHandler) FindAllClasses(c *gin.Context) {
@@ -426,9 +361,9 @@ func (h *adminHandler) FindAllClasses(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data kelas")
 		return
 	}
-	var responses []ClassResponse
+	var responses []utils.ClassResponse
 	for _, class := range classes {
-		responses = append(responses, formatClassResponse(&class))
+		responses = append(responses, utils.FormatClassResponse(&class))
 	}
 	utils.SendSuccessResponse(c, http.StatusOK, "Data kelas berhasil diambil", responses)
 }
@@ -440,17 +375,17 @@ func (h *adminHandler) FindClassByID(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusNotFound, "Kelas tidak ditemukan")
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusOK, "Detail kelas berhasil diambil", formatClassResponse(class))
+	utils.SendSuccessResponse(c, http.StatusOK, "Detail kelas berhasil diambil", utils.FormatClassResponse(class))
 }
 
 func (h *adminHandler) UpdateClass(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	var req UpdateClassRequest
+	var req utils.UpdateClassRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Input tidak valid: "+err.Error())
 		return
 	}
-	input := service.UpdateClassInput{
+	input := dto.UpdateClassInput{
 		TingkatID: req.TingkatID,
 		NamaKelas: req.NamaKelas,
 		WaliKelas: req.WaliKelas,
@@ -462,7 +397,7 @@ func (h *adminHandler) UpdateClass(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.SendSuccessResponse(c, http.StatusOK, "Kelas berhasil diperbarui", formatClassResponse(updatedClass))
+	utils.SendSuccessResponse(c, http.StatusOK, "Kelas berhasil diperbarui", utils.FormatClassResponse(updatedClass))
 }
 
 func (h *adminHandler) DeleteClass(c *gin.Context) {
