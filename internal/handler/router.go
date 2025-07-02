@@ -12,11 +12,12 @@ type Router struct {
 	adminHandler     AdminHandler
 	treasurerHandler TreasurerHandler
 	studentHandler   StudentHandler
+	midtransHandler  MidtransHandler
 	jwtSecretKey     string
 }
 
-func NewRouter(engine *gin.Engine, authHandler AuthHandler, adminHandler AdminHandler, treasurerHandler TreasurerHandler, studentHandler StudentHandler, jwtSecretKey string) *Router {
-	return &Router{engine, authHandler, adminHandler, treasurerHandler, studentHandler, jwtSecretKey}
+func NewRouter(engine *gin.Engine, authHandler AuthHandler, adminHandler AdminHandler, treasurerHandler TreasurerHandler, studentHandler StudentHandler, midtransHandler MidtransHandler, jwtSecretKey string) *Router {
+	return &Router{engine, authHandler, adminHandler, treasurerHandler, studentHandler, midtransHandler, jwtSecretKey}
 }
 
 func (r *Router) SetupRoutes() {
@@ -25,6 +26,9 @@ func (r *Router) SetupRoutes() {
 	// Auth routes
 	api.POST("/login", r.authHandler.Login)
 	api.GET("/me", middleware.AuthMiddleware(r.jwtSecretKey, "admin", "bendahara", "siswa"), r.authHandler.GetMe)
+
+	// Midtrans routes
+	api.POST("/payments/midtrans-notification", r.midtransHandler.HandleNotification)
 
 	// Admin routes
 	admin := api.Group("/admin")

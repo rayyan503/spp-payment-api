@@ -56,6 +56,7 @@ func main() {
 	adminHandler := handler.NewAdminHandler(userService, classLevelService, classService, settingService)
 	treasurerHandler := handler.NewTreasurerHandler(studentService, periodService, billService, reportService)
 	studentHandler := handler.NewStudentHandler(studentService, billService, paymentService)
+	midtransHandler := handler.NewMidtransHandler(paymentService)
 
 	router := gin.Default()
 	config := cors.Config{
@@ -66,7 +67,7 @@ func main() {
 		AllowCredentials: true,
 	}
 	router.Use(cors.New(config))
-	apiRouter := handler.NewRouter(router, authHandler, adminHandler, treasurerHandler, studentHandler, cfg.JWTSecretKey)
+	apiRouter := handler.NewRouter(router, authHandler, adminHandler, treasurerHandler, studentHandler, midtransHandler, cfg.JWTSecretKey)
 	apiRouter.SetupRoutes()
 
 	log.Printf("Server starting on port %s", cfg.ServerPort)
