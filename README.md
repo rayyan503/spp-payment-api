@@ -98,6 +98,7 @@ Proyek ini menggunakan arsitektur berlapis (*Layered Architecture*) untuk memisa
 ```
 internal/
 ├── config/       # Manajemen konfigurasi (env)
+├── dto/          # Data Transfer Object
 ├── handler/      # Layer presentasi (HTTP handlers, routing)
 ├── middleware/   # Middleware untuk otentikasi, logging, dll.
 ├── model/        # Struct data yang merepresentasikan tabel database (GORM models)
