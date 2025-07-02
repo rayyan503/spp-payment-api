@@ -39,6 +39,11 @@ func (r *Router) SetupRoutes() {
 		admin.GET("/class-levels/:id", r.adminHandler.FindClassLevelByID)
 		admin.PUT("/class-levels/:id", r.adminHandler.UpdateClassLevel)
 		admin.DELETE("/class-levels/:id", r.adminHandler.DeleteClassLevel)
+		admin.POST("/classes", r.adminHandler.CreateClass)
+		admin.GET("/classes", r.adminHandler.FindAllClasses)
+		admin.GET("/classes/:id", r.adminHandler.FindClassByID)
+		admin.PUT("/classes/:id", r.adminHandler.UpdateClass)
+		admin.DELETE("/classes/:id", r.adminHandler.DeleteClass)
 		admin.GET("/settings", r.adminHandler.FindAllSettings)
 		admin.PUT("/settings", r.adminHandler.UpdateSettings)
 	}
