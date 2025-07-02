@@ -67,6 +67,12 @@ func (r *Router) SetupRoutes() {
 		treasurer.GET("/bills/:id", r.treasurerHandler.FindBillByID)
 		treasurer.PUT("/bills/:id", r.treasurerHandler.UpdateBill)
 		treasurer.DELETE("/bills/:id", r.treasurerHandler.DeleteBill)
+		reports := treasurer.Group("/reports")
+		{
+			reports.GET("/per-student", r.treasurerHandler.GetLaporanSiswa)
+			reports.GET("/per-class", r.treasurerHandler.GetLaporanKelas)
+			reports.GET("/overall", r.treasurerHandler.GetLaporanKeseluruhan)
+		}
 	}
 
 	// Student routes

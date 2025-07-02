@@ -513,6 +513,34 @@ Berikut adalah dokumentasi untuk endpoint yang telah diimplementasikan.
 
 </details>
 
+<details>
+<summary><b>Bendahara - Laporan</b></summary>
+
+### Laporan Per Siswa
+-   `GET /api/v1/treasurer/reports/per-student`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `tahun_ajaran` (string): Filter berdasarkan tahun ajaran.
+    -   `nisn` (string): Filter untuk mendapatkan laporan satu siswa spesifik.
+
+### Laporan Per Kelas
+-   `GET /api/v1/treasurer/reports/per-class`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `tahun_ajaran` (string): Filter berdasarkan tahun ajaran.
+    -   `nama_bulan` (string): Filter berdasarkan nama bulan (e.g., "Juli").
+
+### Laporan Keseluruhan
+-   `GET /api/v1/treasurer/reports/overall`
+-   **Otorisasi**: Bendahara, Admin
+-   **Header**: `Authorization: Bearer <TOKEN>`
+-   **Query Params (Opsional)**:
+    -   `tahun_ajaran` (string): Filter berdasarkan tahun ajaran.
+
+</details>
+
 ## Kontribusi
 
 Kontribusi dalam bentuk *pull request*, isu, atau ide fitur sangat diterima.

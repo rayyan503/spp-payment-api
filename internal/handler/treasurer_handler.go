@@ -112,16 +112,20 @@ type TreasurerHandler interface {
 	FindBillByID(c *gin.Context)
 	UpdateBill(c *gin.Context)
 	DeleteBill(c *gin.Context)
+	GetLaporanSiswa(c *gin.Context)
+	GetLaporanKelas(c *gin.Context)
+	GetLaporanKeseluruhan(c *gin.Context)
 }
 
 type treasurerHandler struct {
 	studentService service.StudentService
 	periodService  service.PeriodService
 	billService    service.BillService
+	reportService  service.ReportService
 }
 
-func NewTreasurerHandler(studentService service.StudentService, periodService service.PeriodService, billService service.BillService) TreasurerHandler {
-	return &treasurerHandler{studentService, periodService, billService}
+func NewTreasurerHandler(studentService service.StudentService, periodService service.PeriodService, billService service.BillService, reportService service.ReportService) TreasurerHandler {
+	return &treasurerHandler{studentService, periodService, billService, reportService}
 }
 
 func formatStudentResponse(student *model.Siswa) StudentResponse {
@@ -537,4 +541,36 @@ func (h *treasurerHandler) DeleteBill(c *gin.Context) {
 		return
 	}
 	utils.SendSuccessResponse(c, http.StatusOK, "Tagihan berhasil dihapus", nil)
+}
+
+func (h *treasurerHandler) GetLaporanSiswa(c *gin.Context) {
+	tahunAjaran := c.Query("tahun_ajaran")
+	nisn := c.Query("nisn")
+	result, err := h.reportService.GetLaporanSiswa(tahunAjaran, nisn)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil laporan per siswa")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Laporan per siswa berhasil diambil", result)
+}
+
+func (h *treasurerHandler) GetLaporanKelas(c *gin.Context) {
+	tahunAjaran := c.Query("tahun_ajaran")
+	namaBulan := c.Query("nama_bulan")
+	result, err := h.reportService.GetLaporanKelas(tahunAjaran, namaBulan)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil laporan per kelas")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Laporan per kelas berhasil diambil", result)
+}
+
+func (h *treasurerHandler) GetLaporanKeseluruhan(c *gin.Context) {
+	tahunAjaran := c.Query("tahun_ajaran")
+	result, err := h.reportService.GetLaporanKeseluruhan(tahunAjaran)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil laporan keseluruhan")
+		return
+	}
+	utils.SendSuccessResponse(c, http.StatusOK, "Laporan keseluruhan berhasil diambil", result)
 }
