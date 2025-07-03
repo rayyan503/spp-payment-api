@@ -51,7 +51,7 @@ func (h *adminHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	input := service.CreateUserInput{
+	input := dto.CreateUserInput{
 		NamaLengkap: req.NamaLengkap,
 		Email:       req.Email,
 		Password:    req.Password,
@@ -84,7 +84,7 @@ func (h *adminHandler) FindAllUsers(c *gin.Context) {
 	roleID, _ := strconv.Atoi(c.Query("role_id"))
 	search := c.Query("search")
 
-	input := service.FindAllUsersInput{
+	input := dto.FindAllUsersInput{
 		Page:   page,
 		Limit:  limit,
 		RoleID: uint(roleID),
@@ -161,7 +161,7 @@ func (h *adminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	input := service.UpdateUserInput{
+	input := dto.UpdateUserInput{
 		NamaLengkap: req.NamaLengkap,
 		Email:       req.Email,
 		RoleID:      req.RoleID,

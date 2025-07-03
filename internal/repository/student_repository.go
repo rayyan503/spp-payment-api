@@ -25,14 +25,14 @@ func NewStudentRepository(db *gorm.DB) StudentRepository {
 }
 
 func (r *studentRepository) Create(student *model.Siswa) error {
-	return r.db.Table("siswa").Create(student).Error
+	return r.db.Create(student).Error
 }
 
 func (r *studentRepository) FindAll(params utils.FindAllStudentsParams) ([]model.Siswa, int64, error) {
 	var students []model.Siswa
 	var total int64
 
-	query := r.db.Table("siswa")
+	query := r.db
 
 	if params.KelasID != 0 {
 		query = query.Where("kelas_id = ?", params.KelasID)
@@ -61,13 +61,13 @@ func (r *studentRepository) FindAll(params utils.FindAllStudentsParams) ([]model
 
 func (r *studentRepository) FindByID(id uint) (*model.Siswa, error) {
 	var student model.Siswa
-	err := r.db.Table("siswa").Preload("User").Preload("Kelas.TingkatKelas").Where("id = ?", id).First(&student).Error
+	err := r.db.Preload("User").Preload("Kelas.TingkatKelas").Where("id = ?", id).First(&student).Error
 	return &student, err
 }
 
 func (r *studentRepository) FindByNISN(nisn string) (*model.Siswa, error) {
 	var student model.Siswa
-	err := r.db.Table("siswa").Where("nisn = ?", nisn).First(&student).Error
+	err := r.db.Where("nisn = ?", nisn).First(&student).Error
 	return &student, err
 }
 
@@ -80,7 +80,7 @@ func (r *studentRepository) Delete(id uint) error {
 	if err != nil {
 		return err
 	}
-	return r.db.Delete(&model.User{}, student.UserID).Error
+	return r.db.Delete(&model.Users{}, student.UserID).Error
 }
 
 func (r *studentRepository) FindByUserID(userID uint) (*model.Siswa, error) {

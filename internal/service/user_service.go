@@ -11,10 +11,10 @@ import (
 )
 
 type UserService interface {
-	GetUserProfile(userID uint) (*model.User, error)
-	CreateUser(input dto.CreateUserInput) (*model.User, error)
-	FindAllUsers(input dto.FindAllUsersInput) ([]model.User, int64, error)
-	UpdateUser(id uint, input dto.UpdateUserInput) (*model.User, error)
+	GetUserProfile(userID uint) (*model.Users, error)
+	CreateUser(input dto.CreateUserInput) (*model.Users, error)
+	FindAllUsers(input dto.FindAllUsersInput) ([]model.Users, int64, error)
+	UpdateUser(id uint, input dto.UpdateUserInput) (*model.Users, error)
 	DeleteUser(id uint) error
 }
 
@@ -26,11 +26,11 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 	return &userService{userRepo}
 }
 
-func (s *userService) GetUserProfile(userID uint) (*model.User, error) {
+func (s *userService) GetUserProfile(userID uint) (*model.Users, error) {
 	return s.userRepo.FindByID(userID)
 }
 
-func (s *userService) CreateUser(input dto.CreateUserInput) (*model.User, error) {
+func (s *userService) CreateUser(input dto.CreateUserInput) (*model.Users, error) {
 	_, err := s.userRepo.FindByEmail(input.Email)
 	if err == nil || !errors.Is(err, gorm.ErrRecordNotFound) {
 		if err == nil {
@@ -44,7 +44,7 @@ func (s *userService) CreateUser(input dto.CreateUserInput) (*model.User, error)
 		return nil, err
 	}
 
-	newUser := model.User{
+	newUser := model.Users{
 		NamaLengkap: input.NamaLengkap,
 		Email:       input.Email,
 		Password:    hashedPassword,
@@ -65,7 +65,7 @@ func (s *userService) CreateUser(input dto.CreateUserInput) (*model.User, error)
 	return createdUser, nil
 }
 
-func (s *userService) FindAllUsers(input dto.FindAllUsersInput) ([]model.User, int64, error) {
+func (s *userService) FindAllUsers(input dto.FindAllUsersInput) ([]model.Users, int64, error) {
 	if input.Page <= 0 {
 		input.Page = 1
 	}
@@ -88,7 +88,7 @@ func (s *userService) FindAllUsers(input dto.FindAllUsersInput) ([]model.User, i
 	return users, total, nil
 }
 
-func (s *userService) UpdateUser(id uint, input dto.UpdateUserInput) (*model.User, error) {
+func (s *userService) UpdateUser(id uint, input dto.UpdateUserInput) (*model.Users, error) {
 	user, err := s.userRepo.FindByID(id)
 	if err != nil {
 		return nil, err

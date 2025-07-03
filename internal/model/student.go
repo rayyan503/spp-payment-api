@@ -18,6 +18,6 @@ type Siswa struct {
 	Status          string     `gorm:"type:enum('aktif', 'pindah', 'lulus', 'keluar');default:'aktif'"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
-	User            User  `gorm:"foreignKey:UserID"`
+	User            Users `gorm:"foreignKey:UserID"`
 	Kelas           Kelas `gorm:"foreignKey:KelasID"`
 }

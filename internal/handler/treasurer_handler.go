@@ -52,7 +52,7 @@ func (h *treasurerHandler) CreateStudent(c *gin.Context) {
 		return
 	}
 
-	input := service.CreateStudentInput{
+	input := dto.CreateStudentInput{
 		Email:           req.Email,
 		Password:        req.Password,
 		NISN:            req.NISN,
@@ -82,7 +82,7 @@ func (h *treasurerHandler) FindAllStudents(c *gin.Context) {
 	kelasID, _ := strconv.Atoi(c.Query("kelas_id"))
 	search := c.Query("search")
 
-	input := service.FindAllStudentsInput{
+	input := dto.FindAllStudentsInput{
 		Page:    page,
 		Limit:   limit,
 		KelasID: uint(kelasID),
@@ -144,7 +144,7 @@ func (h *treasurerHandler) UpdateStudent(c *gin.Context) {
 		return
 	}
 
-	input := service.UpdateStudentInput{
+	input := dto.UpdateStudentInput{
 		NISN:            req.NISN,
 		KelasID:         req.KelasID,
 		NamaLengkap:     req.NamaLengkap,
@@ -204,7 +204,7 @@ func (h *treasurerHandler) CreatePeriod(c *gin.Context) {
 		return
 	}
 
-	input := service.CreatePeriodInput{
+	input := dto.CreatePeriodInput{
 		TahunAjaran:    req.TahunAjaran,
 		Bulan:          req.Bulan,
 		NamaBulan:      req.NamaBulan,
@@ -267,7 +267,7 @@ func (h *treasurerHandler) UpdatePeriod(c *gin.Context) {
 		return
 	}
 
-	input := service.UpdatePeriodInput{
+	input := dto.UpdatePeriodInput{
 		TahunAjaran:    req.TahunAjaran,
 		Bulan:          req.Bulan,
 		NamaBulan:      req.NamaBulan,

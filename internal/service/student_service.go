@@ -61,7 +61,7 @@ func (s *studentService) CreateStudent(input dto.CreateStudentInput) (*model.Sis
 		tx.Rollback()
 		return nil, err
 	}
-	newUser := &model.User{
+	newUser := &model.Users{
 		Email:       input.Email,
 		Password:    hashedPassword,
 		RoleID:      3,

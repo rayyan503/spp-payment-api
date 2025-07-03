@@ -10,5 +10,5 @@ type LogAktivitas struct {
 	IPAddress *string `gorm:"type:varchar(45)"`
 	UserAgent *string `gorm:"type:text"`
 	CreatedAt time.Time
-	User      User `gorm:"foreignKey:UserID"`
+	User      Users `gorm:"foreignKey:UserID"`
 }

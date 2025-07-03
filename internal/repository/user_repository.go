@@ -8,11 +8,11 @@ import (
 )
 
 type UserRepository interface {
-	FindByEmail(email string) (*model.User, error)
-	FindByID(id uint) (*model.User, error)
-	Create(user *model.User) error
-	FindAll(params utils.FindAllUsersParams) ([]model.User, int64, error)
-	Update(user *model.User) error
+	FindByEmail(email string) (*model.Users, error)
+	FindByID(id uint) (*model.Users, error)
+	Create(user *model.Users) error
+	FindAll(params utils.FindAllUsersParams) ([]model.Users, int64, error)
+	Update(user *model.Users) error
 	Delete(id uint) error
 }
 
@@ -24,8 +24,8 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db}
 }
 
-func (r *userRepository) FindByEmail(email string) (*model.User, error) {
-	var user model.User
+func (r *userRepository) FindByEmail(email string) (*model.Users, error) {
+	var user model.Users
 	err := r.db.Where("email = ?", email).Preload("Role").First(&user).Error
 	if err != nil {
 		return nil, err
@@ -33,8 +33,8 @@ func (r *userRepository) FindByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) FindByID(id uint) (*model.User, error) {
-	var user model.User
+func (r *userRepository) FindByID(id uint) (*model.Users, error) {
+	var user model.Users
 	err := r.db.Where("id = ?", id).Preload("Role").First(&user).Error
 	if err != nil {
 		return nil, err
@@ -42,15 +42,15 @@ func (r *userRepository) FindByID(id uint) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) Create(user *model.User) error {
+func (r *userRepository) Create(user *model.Users) error {
 	return r.db.Create(user).Error
 }
 
-func (r *userRepository) FindAll(params utils.FindAllUsersParams) ([]model.User, int64, error) {
-	var users []model.User
+func (r *userRepository) FindAll(params utils.FindAllUsersParams) ([]model.Users, int64, error) {
+	var users []model.Users
 	var total int64
 
-	query := r.db.Model(&model.User{})
+	query := r.db.Model(&model.Users{})
 
 	if params.RoleID != 0 {
 		query = query.Where("role_id = ?", params.RoleID)
@@ -74,10 +74,10 @@ func (r *userRepository) FindAll(params utils.FindAllUsersParams) ([]model.User,
 	return users, total, nil
 }
 
-func (r *userRepository) Update(user *model.User) error {
+func (r *userRepository) Update(user *model.Users) error {
 	return r.db.Save(user).Error
 }
 
 func (r *userRepository) Delete(id uint) error {
-	return r.db.Where("id = ?", id).Delete(&model.User{}).Error
+	return r.db.Where("id = ?", id).Delete(&model.Users{}).Error
 }
