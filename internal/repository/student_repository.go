@@ -32,7 +32,7 @@ func (r *studentRepository) FindAll(params utils.FindAllStudentsParams) ([]model
 	var students []model.Siswa
 	var total int64
 
-	query := r.db
+	query := r.db.Model(&model.Siswa{})
 
 	if params.KelasID != 0 {
 		query = query.Where("kelas_id = ?", params.KelasID)
