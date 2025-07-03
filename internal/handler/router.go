@@ -45,7 +45,6 @@ func (r *Router) SetupRoutes() {
 		admin.PUT("/class-levels/:id", r.adminHandler.UpdateClassLevel)
 		admin.DELETE("/class-levels/:id", r.adminHandler.DeleteClassLevel)
 		admin.POST("/classes", r.adminHandler.CreateClass)
-		admin.GET("/classes", r.adminHandler.FindAllClasses)
 		admin.GET("/classes/:id", r.adminHandler.FindClassByID)
 		admin.PUT("/classes/:id", r.adminHandler.UpdateClass)
 		admin.DELETE("/classes/:id", r.adminHandler.DeleteClass)
@@ -57,6 +56,7 @@ func (r *Router) SetupRoutes() {
 	treasurer := api.Group("/treasurer")
 	treasurer.Use(middleware.AuthMiddleware(r.jwtSecretKey, "bendahara", "admin"))
 	{
+		treasurer.GET("/classes", r.adminHandler.FindAllClasses)
 		treasurer.POST("/students", r.treasurerHandler.CreateStudent)
 		treasurer.GET("/students", r.treasurerHandler.FindAllStudents)
 		treasurer.GET("/students/:id", r.treasurerHandler.FindStudentByID)
