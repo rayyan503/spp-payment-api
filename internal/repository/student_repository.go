@@ -50,7 +50,7 @@ func (r *studentRepository) FindAll(params utils.FindAllStudentsParams) ([]model
 	err = query.Limit(params.Limit).Offset(offset).
 		Preload("User").
 		Preload("Kelas.TingkatKelas").
-		Order("id desc").
+		Order("id asc").
 		Find(&students).Error
 	if err != nil {
 		return nil, 0, err
