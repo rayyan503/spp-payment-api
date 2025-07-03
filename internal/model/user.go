@@ -14,10 +14,10 @@ type Users struct {
 	LastLogin   *time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	Role        Role `gorm:"foreignKey:RoleID"`
+	Role        Roles `gorm:"foreignKey:RoleID"`
 }
 
-type Role struct {
+type Roles struct {
 	ID        uint   `gorm:"primaryKey"`
 	NamaRole  string `gorm:"type:varchar(50);unique;not null"`
 	Deskripsi string `gorm:"type:text"`
