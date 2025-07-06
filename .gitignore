@@ -2,9 +2,6 @@
 *.exe
 spp-payment-api
 
-# Env file
-.env
-
 # Logs
 *.log
 
