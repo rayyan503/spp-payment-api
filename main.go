@@ -65,7 +65,7 @@ func main() {
 
 	router := gin.Default()
 	config := cors.Config{
-		AllowOrigins:     []string{"https://spp-pembayaran.vercel.app"},
+		AllowOrigins:     []string{"http://203.194.113.236", "https://sd-taman-harapan.com"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
